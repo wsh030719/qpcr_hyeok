@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ΔΔCt — qPCR 분석기</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+  :root{
+    --paper:#F6F7F4;
+    --surface:#FFFFFF;
+    --ink:#161D24;
+    --ink-2:#5B6770;
+    --ink-3:#93A0A8;
+    --rule:#DDE3E0;
+    --fam:#0E8C99;        /* FAM — 청록, 주 액센트 */
+    --fam-deep:#0A6B75;
+    --fam-wash:#E4F2F3;
+    --rox:#D8453C;        /* ROX — 적색, 경고 */
+    --rox-wash:#FBE9E8;
+    --vic:#D4901F;        /* VIC — 황색, 주의 */
+    --vic-wash:#FBF1DE;
+    --shadow:0 1px 2px rgba(22,29,36,.05), 0 8px 24px -12px rgba(22,29,36,.14);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    background:var(--paper); color:var(--ink);
+    font-family:'IBM Plex Sans',system-ui,'Malgun Gothic',sans-serif;
+    font-size:15px; line-height:1.55;
+    -webkit-font-smoothing:antialiased;
+  }
+  .num{font-family:'IBM Plex Mono',ui-monospace,monospace; font-variant-numeric:tabular-nums;}
+  .wrap{max-width:1120px; margin:0 auto; padding:0 24px 96px;}
+
+  /* ---------- header ---------- */
+  header{
+    border-bottom:1px solid var(--rule);
+    background:linear-gradient(180deg,#fff, var(--paper));
+  }
+  .head-in{max-width:1120px;margin:0 auto;padding:34px 24px 30px;
+    display:flex; align-items:flex-end; justify-content:space-between; gap:24px; flex-wrap:wrap;}
+  .mark{display:flex;align-items:center;gap:14px}
+  .mark svg{display:block}
+  h1{
+    font-family:'Space Grotesk',sans-serif; font-weight:700;
+    font-size:30px; letter-spacing:-.02em; line-height:1.1;
+  }
+  .sub{color:var(--ink-2); font-size:14px; margin-top:3px}
+  .eq{
+    font-family:'IBM Plex Mono',monospace; font-size:12px; color:var(--ink-2);
+    background:var(--surface); border:1px solid var(--rule); border-radius:6px;
+    padding:9px 13px; white-space:nowrap;
+  }
+  .eq b{color:var(--fam-deep); font-weight:600}
+
+  /* ---------- drop ---------- */
+  .drop{
+    margin-top:30px; background:var(--surface);
+    border:1.5px dashed var(--rule); border-radius:12px;
+    padding:52px 24px; text-align:center; cursor:pointer;
+    transition:border-color .16s, background .16s;
+  }
+  .drop:hover,.drop.over{border-color:var(--fam); background:var(--fam-wash)}
+  .drop h2{font-family:'Space Grotesk',sans-serif;font-size:19px;font-weight:500;letter-spacing:-.01em}
+  .drop p{color:var(--ink-2);font-size:13.5px;margin-top:7px}
+  .drop .priv{color:var(--ink-3);font-size:12px;margin-top:16px}
+
+  /* ---------- panels ---------- */
+  section{margin-top:38px}
+  .eyebrow{
+    font-family:'IBM Plex Mono',monospace; font-size:11px; font-weight:600;
+    letter-spacing:.13em; text-transform:uppercase; color:var(--ink-3);
+    display:flex; align-items:center; gap:11px; margin-bottom:14px;
+  }
+  .eyebrow::after{content:"";flex:1;height:1px;background:var(--rule)}
+  .panel{
+    background:var(--surface); border:1px solid var(--rule);
+    border-radius:12px; padding:22px; box-shadow:var(--shadow);
+  }
+
+  /* ---------- controls ---------- */
+  .ctrls{display:flex;gap:20px;flex-wrap:wrap;align-items:flex-end}
+  .field{display:flex;flex-direction:column;gap:6px;min-width:170px}
+  label{font-size:12px;font-weight:600;color:var(--ink-2);letter-spacing:.01em}
+  select,input[type=text]{
+    font-family:'IBM Plex Sans',sans-serif; font-size:14px; color:var(--ink);
+    padding:8px 11px; border:1px solid var(--rule); border-radius:7px;
+    background:var(--surface); outline:none;
+  }
+  select:focus,input:focus{border-color:var(--fam); box-shadow:0 0 0 3px var(--fam-wash)}
+  .switch{display:flex;align-items:center;gap:9px;font-size:13.5px;color:var(--ink);cursor:pointer;padding-bottom:9px}
+  .switch input{width:16px;height:16px;accent-color:var(--fam);cursor:pointer}
+
+  /* group order chips */
+  .chips{display:flex;flex-wrap:wrap;gap:7px;margin-top:14px}
+  .chip{
+    font-size:12.5px; padding:5px 10px; border:1px solid var(--rule);
+    border-radius:20px; background:var(--paper); cursor:grab; user-select:none;
+    display:flex;align-items:center;gap:7px;
+  }
+  .chip[draggable=true]:active{cursor:grabbing}
+  .chip.drag{opacity:.35}
+  .chip .idx{font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:var(--ink-3)}
+  .chip.cal{border-color:var(--fam);background:var(--fam-wash);color:var(--fam-deep);font-weight:600}
+  .hint{font-size:12px;color:var(--ink-3);margin-top:9px}
+
+  /* ---------- plate (signature) ---------- */
+  .plate-head{display:flex;justify-content:space-between;align-items:baseline;gap:16px;flex-wrap:wrap;margin-bottom:6px}
+  .legend{display:flex;gap:16px;flex-wrap:wrap;font-size:12px;color:var(--ink-2)}
+  .legend span{display:flex;align-items:center;gap:6px}
+  .dot{width:9px;height:9px;border-radius:50%;display:inline-block}
+  .plate-scroll{overflow-x:auto;padding:8px 2px 4px;margin:0 -4px}
+  .plate{border-collapse:separate;border-spacing:4px}
+  .plate th{
+    font-family:'IBM Plex Mono',monospace;font-size:10.5px;font-weight:500;
+    color:var(--ink-3);padding:0 2px;
+  }
+  .well{
+    width:74px;height:50px;border-radius:8px;border:1px solid var(--rule);
+    background:var(--paper);cursor:pointer;padding:5px 4px;text-align:center;
+    transition:transform .1s, box-shadow .12s;
+  }
+  .well:hover{transform:translateY(-1px);box-shadow:0 3px 10px -3px rgba(22,29,36,.22)}
+  .well.empty{background:transparent;border:1px dashed #EAEEEC;cursor:default}
+  .well.empty:hover{transform:none;box-shadow:none}
+  .well .ct{font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:600;line-height:1.15}
+  .well .tg{font-size:9.5px;color:var(--ink-3);line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .well.ok{border-color:#C9DCDB}
+  .well.warn{background:var(--vic-wash);border-color:#E7CE9B}
+  .well.warn .ct{color:#9A6510}
+  .well.bad{background:var(--rox-wash);border-color:#EEBBB7}
+  .well.bad .ct{color:var(--rox)}
+  .well.off{background:repeating-linear-gradient(45deg,#F0F2F0,#F0F2F0 4px,#E6E9E7 4px,#E6E9E7 8px);border-color:var(--rule)}
+  .well.off .ct{color:var(--ink-3);text-decoration:line-through}
+  .well.off .tg{color:#BCC5C9}
+  .qcbar{
+    display:flex;gap:10px;align-items:center;flex-wrap:wrap;
+    margin-top:16px;padding-top:15px;border-top:1px solid var(--rule);
+  }
+  .flagnote{
+    font-size:13px;color:var(--ink-2);background:var(--rox-wash);
+    border-left:3px solid var(--rox);border-radius:0 7px 7px 0;padding:9px 13px;
+  }
+  .flagnote.none{background:var(--fam-wash);border-left-color:var(--fam);}
+  button{
+    font-family:'IBM Plex Sans',sans-serif;font-size:13px;font-weight:600;
+    padding:8px 15px;border-radius:7px;border:1px solid var(--rule);
+    background:var(--surface);color:var(--ink);cursor:pointer;transition:.12s;
+  }
+  button:hover{border-color:var(--ink-3)}
+  button.solid{background:var(--fam);border-color:var(--fam);color:#fff}
+  button.solid:hover{background:var(--fam-deep);border-color:var(--fam-deep)}
+  button:focus-visible,.well:focus-visible,.drop:focus-visible{outline:2px solid var(--fam);outline-offset:2px}
+
+  /* ---------- gene cards ---------- */
+  .gene{margin-top:22px}
+  .gene-head{display:flex;align-items:baseline;gap:12px;margin-bottom:16px}
+  .gene-head h3{font-family:'Space Grotesk',sans-serif;font-size:21px;font-weight:700;letter-spacing:-.01em}
+  .gene-head .meta{font-size:12px;color:var(--ink-3);font-family:'IBM Plex Mono',monospace}
+  .gene-body{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:26px;align-items:start}
+  @media(max-width:900px){.gene-body{grid-template-columns:1fr}}
+  table.data{width:100%;border-collapse:collapse;font-size:13px}
+  table.data th{
+    font-family:'IBM Plex Mono',monospace;font-size:10.5px;font-weight:600;letter-spacing:.06em;
+    text-transform:uppercase;color:var(--ink-3);text-align:right;padding:0 0 8px;border-bottom:1px solid var(--rule);
+  }
+  table.data th:first-child{text-align:left}
+  table.data td{padding:7px 0;border-bottom:1px solid #EFF2F0;text-align:right;
+    font-family:'IBM Plex Mono',monospace;font-variant-numeric:tabular-nums}
+  table.data td:first-child{text-align:left;font-family:'IBM Plex Sans',sans-serif;font-weight:500}
+  table.data tr.calrow td{background:var(--fam-wash)}
+  table.data tr.calrow td:first-child{color:var(--fam-deep);border-radius:5px 0 0 5px;padding-left:7px}
+  table.data tr.calrow td:last-child{border-radius:0 5px 5px 0;padding-right:7px}
+  .sd{color:var(--ink-3);font-size:12px}
+  .n{color:var(--ink-3);font-size:11.5px}
+  .chartbox{border:1px solid var(--rule);border-radius:10px;padding:6px;background:var(--surface)}
+  .chartbox svg{width:100%;height:auto;display:block}
+
+  /* ---------- export ---------- */
+  .export{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+  .export .note{font-size:12.5px;color:var(--ink-3);margin-left:2px}
+  .hidden{display:none}
+  footer{margin-top:56px;padding-top:22px;border-top:1px solid var(--rule);
+    font-size:12.5px;color:var(--ink-3);line-height:1.7}
+  footer code{font-family:'IBM Plex Mono',monospace;background:var(--paper);
+    padding:1px 5px;border-radius:4px;color:var(--ink-2)}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="head-in">
+    <div class="mark">
+      <svg width="38" height="38" viewBox="0 0 38 38" fill="none" aria-hidden="true">
+        <rect x="1" y="1" width="36" height="36" rx="9" fill="#E4F2F3" stroke="#0E8C99" stroke-width="1.4"/>
+        <path d="M7 28c6.5 0 5-13 12-13s5.5 9 12 9" stroke="#0E8C99" stroke-width="2.1" stroke-linecap="round" fill="none"/>
+        <circle cx="12" cy="12" r="2.2" fill="#D8453C"/>
+      </svg>
+      <div>
+        <h1>ΔΔCt</h1>
+        <div class="sub">qPCR 결과 파일을 상대 발현량으로</div>
+      </div>
+    </div>
+    <div class="eq">∆Cp = Ct<sub>target</sub> − Ct<sub>ref</sub> &nbsp;→&nbsp; ∆∆Cp = ∆Cp − ∆Cp<sub>cal</sub> &nbsp;→&nbsp; <b>2^(−∆∆Cp)</b></div>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <div class="drop" id="drop" tabindex="0" role="button" aria-label="결과 파일 열기">
+    <h2>결과 파일을 여기에 끌어다 놓기</h2>
+    <p>QuantStudio · SDS export (.xlsx / .xls / .csv) — 클릭해서 골라도 됨</p>
+    <div class="priv">파일은 브라우저 안에서만 처리됨. 어디에도 업로드되지 않음.</div>
+    <input type="file" id="file" accept=".xlsx,.xls,.csv" class="hidden">
+  </div>
+
+  <div id="app" class="hidden">
+
+    <section>
+      <div class="eyebrow">설정</div>
+      <div class="panel">
+        <div class="ctrls">
+          <div class="field">
+            <label for="ref">Reference (housekeeping)</label>
+            <select id="ref"></select>
+          </div>
+          <div class="field">
+            <label for="cal">Calibrator (=1 기준군)</label>
+            <select id="cal"></select>
+          </div>
+          <label class="switch"><input type="checkbox" id="sortct" checked> 그룹 내 Ct 오름차순 정렬 후 pairing</label>
+        </div>
+        <div class="chips" id="chips"></div>
+        <div class="hint">칩을 끌어서 그래프 x축 순서를 바꿀 수 있음.</div>
+      </div>
+    </section>
+
+    <section>
+      <div class="eyebrow">Plate QC</div>
+      <div class="panel">
+        <div class="plate-head">
+          <div class="legend">
+            <span><i class="dot" style="background:#C9DCDB"></i>정상</span>
+            <span><i class="dot" style="background:var(--vic)"></i>rep 산포 큼 (SD &gt; 0.5)</span>
+            <span><i class="dot" style="background:var(--rox)"></i>Ct &gt; 35 · 미검출</span>
+            <span><i class="dot" style="background:#C7CDC9"></i>제외됨</span>
+          </div>
+          <div class="hint" style="margin:0">웰을 클릭하면 계산에서 빠짐</div>
+        </div>
+        <div class="plate-scroll"><table class="plate" id="plate"></table></div>
+        <div class="qcbar">
+          <div class="flagnote" id="flagnote"></div>
+          <div style="flex:1"></div>
+          <button id="excl-all">경고 웰 전부 제외</button>
+          <button id="incl-all">전부 되돌리기</button>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="eyebrow">결과</div>
+      <div id="genes"></div>
+    </section>
+
+    <section>
+      <div class="eyebrow">내보내기</div>
+      <div class="panel export">
+        <button class="solid" id="dl-xlsx">엑셀로 저장 (수식 포함)</button>
+        <button id="dl-csv">Summary CSV</button>
+        <span class="note">그래프는 각 카드의 <b>PNG</b> 버튼으로 따로 저장</span>
+      </div>
+    </section>
+
+    <footer>
+      Reference로 정규화한 뒤 calibrator를 1로 두는 표준 2<sup>−∆∆Ct</sup> (Livak) 방식.
+      Replicate pairing은 그룹 내에서 target·reference Ct를 각각 오름차순 정렬해 짝지음 —
+      옵션을 끄면 well 순서대로 짝지음.
+      막대는 정규화값 평균, 오차막대는 표본표준편차(<code>STDEV</code>, n−1), 점은 개별 replicate.
+    </footer>
+  </div>
+</div>
+
+<script>
+/* ============ state ============ */
+let RAW = [];            // {well, sample, target, ct, undet, key}
+let EXCLUDED = new Set();
+let ORDER = [];
+const F = (x,d=4)=> (x==null||!isFinite(x)) ? "—" : x.toFixed(d);
+const CT_LATE = 35, SD_HIGH = 0.5;
+
+/* ============ file in ============ */
+const drop=document.getElementById('drop'), fileIn=document.getElementById('file');
+drop.onclick=()=>fileIn.click();
+drop.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();fileIn.click();}};
+drop.ondragover=e=>{e.preventDefault();drop.classList.add('over')};
+drop.ondragleave=()=>drop.classList.remove('over');
+drop.ondrop=e=>{e.preventDefault();drop.classList.remove('over');
+  if(e.dataTransfer.files[0]) read(e.dataTransfer.files[0]);};
+fileIn.onchange=e=>{ if(e.target.files[0]) read(e.target.files[0]); };
+
+function read(file){
+  const fr=new FileReader();
+  fr.onload=ev=>{
+    let wb;
+    try{ wb=XLSX.read(new Uint8Array(ev.target.result),{type:'array'}); }
+    catch(err){ return fail('파일을 읽지 못했습니다. .xlsx / .xls / .csv 인지 확인하세요.'); }
+    const rows=XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{header:1,defval:null,raw:true});
+    parse(rows);
+  };
+  fr.readAsArrayBuffer(file);
+}
+function fail(msg){
+  drop.classList.remove('hidden');
+  drop.innerHTML='<h2 style="color:var(--rox)">'+msg+'</h2><p>다시 시도하려면 클릭하세요.</p>';
+  drop.onclick=()=>location.reload();
+}
+function norm(s){ return String(s??'').trim().toLowerCase().replace(/[\s_]/g,''); }
+
+function parse(rows){
+  // 헤더 행 자동 탐색 (export 파일 위쪽 메타데이터 블록 무시)
+  let hi=-1, cols={};
+  for(let i=0;i<Math.min(rows.length,80);i++){
+    const r=(rows[i]||[]).map(norm);
+    const s=r.indexOf('samplename'), t=r.indexOf('targetname');
+    let c=-1;
+    r.forEach((v,j)=>{ if(c<0 && (v==='ct'||v==='cq'||v==='cttext'||v==='cpp')) c=j; });
+    if(c<0) r.forEach((v,j)=>{ if(c<0 && /^(ct|cq)$/.test(v)) c=j; });
+    if(s>=0 && t>=0 && c>=0){ hi=i; cols={s,t,c,w:r.indexOf('wellposition')>=0?r.indexOf('wellposition'):r.indexOf('well')}; break; }
+  }
+  if(hi<0) return fail('Sample Name / Target Name / CT 컬럼을 찾지 못했습니다.');
+
+  RAW=[]; let n=0;
+  for(let i=hi+1;i<rows.length;i++){
+    const r=rows[i]||[];
+    const smp=r[cols.s], tgt=r[cols.t];
+    if(smp==null||tgt==null||String(smp).trim()===''||String(tgt).trim()==='') continue;
+    const rawCt=r[cols.c];
+    const ct=parseFloat(rawCt);
+    const undet=!isFinite(ct);
+    RAW.push({
+      key:'w'+(n++),
+      well: cols.w>=0 && r[cols.w]!=null ? String(r[cols.w]).trim() : '',
+      sample:String(smp).trim(), target:String(tgt).trim(),
+      ct: undet?NaN:ct, undet
+    });
+  }
+  if(!RAW.length) return fail('데이터 행을 찾지 못했습니다.');
+
+  // 미검출은 처음부터 제외
+  EXCLUDED=new Set(RAW.filter(r=>r.undet).map(r=>r.key));
+
+  const targets=[...new Set(RAW.map(r=>r.target))];
+  const samples=[...new Set(RAW.map(r=>r.sample))];
+  ORDER=[...samples];
+
+  const refSel=document.getElementById('ref'), calSel=document.getElementById('cal');
+  refSel.innerHTML=targets.map(t=>`<option>${esc(t)}</option>`).join('');
+  const guess=targets.find(t=>/^(gapdh|actb|β-?actin|b-?actin|18s|hprt|tbp)$/i.test(t.trim()));
+  refSel.value=guess||targets[0];
+  calSel.innerHTML=samples.map(s=>`<option>${esc(s)}</option>`).join('');
+  const cg=samples.find(s=>/^(con|ctrl|control|nc|veh|vehicle|untreated)/i.test(s.trim()));
+  calSel.value=cg||samples[0];
+
+  refSel.onchange=calSel.onchange=render;
+  document.getElementById('sortct').onchange=render;
+  document.getElementById('drop').classList.add('hidden');
+  document.getElementById('app').classList.remove('hidden');
+  render();
+}
+function esc(s){return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+
+/* ============ compute ============ */
+function mean(a){return a.reduce((x,y)=>x+y,0)/a.length;}
+function sd(a){ if(a.length<2) return NaN; const m=mean(a);
+  return Math.sqrt(a.reduce((s,x)=>s+(x-m)**2,0)/(a.length-1)); }
+
+function activeCts(sample,target){
+  return RAW.filter(r=>r.sample===sample && r.target===target && !EXCLUDED.has(r.key) && !r.undet);
+}
+/** QC 플래그: late = Ct>35, high = 그 조합의 (제외 안 된) rep SD > 0.5 */
+function flags(){
+  const late=new Set(), high=new Set();
+  RAW.forEach(r=>{ if(r.undet || (isFinite(r.ct)&&r.ct>CT_LATE)) late.add(r.key); });
+  const seen=new Set();
+  RAW.forEach(r=>{
+    const k=r.sample+'|||'+r.target; if(seen.has(k))return; seen.add(k);
+    const g=activeCts(r.sample,r.target);
+    if(g.length>=2 && sd(g.map(x=>x.ct))>SD_HIGH) g.forEach(x=>high.add(x.key));
+  });
+  return {late,high};
+}
+
+function compute(){
+  const ref=document.getElementById('ref').value;
+  const cal=document.getElementById('cal').value;
+  const doSort=document.getElementById('sortct').checked;
+  const targets=[...new Set(RAW.map(r=>r.target))].filter(t=>t!==ref);
+  const groups=ORDER.filter(g=>RAW.some(r=>r.sample===g));
+
+  const out=[];
+  for(const tgt of targets){
+    const blocks=[];
+    for(const g of groups){
+      let tv=activeCts(g,tgt), gv=activeCts(g,ref);
+      if(doSort){ tv=[...tv].sort((a,b)=>a.ct-b.ct); gv=[...gv].sort((a,b)=>a.ct-b.ct); }
+      const n=Math.min(tv.length,gv.length);
+      if(n===0){ blocks.push({group:g,n:0,reps:[]}); continue; }
+      const reps=[];
+      for(let i=0;i<n;i++) reps.push({tct:tv[i].ct, rct:gv[i].ct, dcp:tv[i].ct-gv[i].ct});
+      blocks.push({group:g,n,reps});
+    }
+    const calB=blocks.find(b=>b.group===cal);
+    if(!calB||!calB.n){ out.push({target:tgt,cal,ref,blocks,ok:false}); continue; }
+    const calDcp=mean(calB.reps.map(r=>r.dcp));
+    blocks.forEach(b=>b.reps.forEach(r=>{ r.ddcp=r.dcp-calDcp; r.pow=Math.pow(2,-r.ddcp); }));
+    const calPow=mean(calB.reps.map(r=>r.pow));
+    blocks.forEach(b=>{
+      b.reps.forEach(r=>{ r.norm=r.pow/calPow; });
+      const N=b.reps.map(r=>r.norm);
+      b.mean = N.length?mean(N):NaN;
+      b.sd   = sd(N);
+      b.dcpMean = b.n?mean(b.reps.map(r=>r.dcp)):NaN;
+      b.dcpSd   = sd(b.reps.map(r=>r.dcp));
+    });
+    out.push({target:tgt,cal,ref,blocks,ok:true,calDcp,calPow});
+  }
+  return {res:out, ref, cal, groups, doSort};
+}
+
+/* ============ render ============ */
+function render(){ renderChips(); renderPlate(); renderGenes(); }
+
+function renderChips(){
+  const cal=document.getElementById('cal').value;
+  const box=document.getElementById('chips');
+  box.innerHTML=ORDER.map((g,i)=>
+    `<div class="chip ${g===cal?'cal':''}" draggable="true" data-g="${esc(g)}">
+       <span class="idx">${i+1}</span>${esc(g)}${g===cal?' · cal':''}</div>`).join('');
+  let src=null;
+  box.querySelectorAll('.chip').forEach(c=>{
+    c.ondragstart=e=>{src=c;c.classList.add('drag');e.dataTransfer.effectAllowed='move';};
+    c.ondragend=()=>{c.classList.remove('drag');src=null;};
+    c.ondragover=e=>{
+      e.preventDefault(); if(!src||src===c)return;
+      const r=c.getBoundingClientRect();
+      box.insertBefore(src, (e.clientX-r.left)/r.width<0.5 ? c : c.nextSibling);
+    };
+    c.ondrop=e=>{
+      e.preventDefault();
+      ORDER=[...box.querySelectorAll('.chip')].map(x=>x.dataset.g);
+      render();
+    };
+  });
+}
+
+function renderPlate(){
+  const {late,high}=flags();
+  // well ID -> row/col 파싱 (A1, B12 …). 없으면 순서대로 채움.
+  const cells=new Map(); let maxC=0, rowsSet=new Set();
+  RAW.forEach((r,i)=>{
+    let rw,cl;
+    const m=/^([A-Ha-h])\s*0?(\d{1,2})$/.exec(r.well||'');
+    if(m){ rw=m[1].toUpperCase(); cl=+m[2]; }
+    else { rw='ABCDEFGH'[Math.floor(i/12)%8]; cl=(i%12)+1; }
+    rowsSet.add(rw); maxC=Math.max(maxC,cl);
+    cells.set(rw+'|'+cl, r);
+  });
+  const rws=[...rowsSet].sort();
+  let h='<thead><tr><th></th>';
+  for(let c=1;c<=maxC;c++) h+=`<th>${c}</th>`;
+  h+='</tr></thead><tbody>';
+  for(const rw of rws){
+    h+=`<tr><th>${rw}</th>`;
+    for(let c=1;c<=maxC;c++){
+      const r=cells.get(rw+'|'+c);
+      if(!r){ h+='<td class="well empty"></td>'; continue; }
+      const off=EXCLUDED.has(r.key);
+      const cls = off?'off' : late.has(r.key)?'bad' : high.has(r.key)?'warn' : 'ok';
+      const ctTxt = r.undet ? 'N/D' : r.ct.toFixed(2);
+      const tip = `${r.sample} · ${r.target} · ${ctTxt}${off?' (제외됨)':''}`;
+      h+=`<td class="well ${cls}" data-k="${r.key}" title="${esc(tip)}" tabindex="0" role="checkbox" aria-checked="${!off}">
+            <div class="ct">${ctTxt}</div><div class="tg">${esc(r.target)}</div></td>`;
+    }
+    h+='</tr>';
+  }
+  document.getElementById('plate').innerHTML=h+'</tbody>';
+  document.querySelectorAll('.well[data-k]').forEach(el=>{
+    const t=()=>{ const k=el.dataset.k;
+      EXCLUDED.has(k)?EXCLUDED.delete(k):EXCLUDED.add(k); render(); };
+    el.onclick=t;
+    el.onkeydown=e=>{ if(e.key==='Enter'||e.key===' '){e.preventDefault();t();} };
+  });
+
+  const nLate=[...late].filter(k=>!EXCLUDED.has(k)).length;
+  const nHigh=[...high].filter(k=>!EXCLUDED.has(k)).length;
+  const note=document.getElementById('flagnote');
+  if(!nLate && !nHigh){
+    note.className='flagnote none';
+    note.textContent=EXCLUDED.size ? `${EXCLUDED.size}개 웰 제외 중 · 남은 웰에 경고 없음` : '경고 웰 없음';
+  }else{
+    note.className='flagnote';
+    const p=[];
+    if(nLate) p.push(`Ct>35 또는 미검출 ${nLate}개`);
+    if(nHigh) p.push(`rep 산포 큼 ${nHigh}개`);
+    note.textContent=p.join(' · ')+' — 증폭 실패나 primer-dimer일 수 있음. 웰을 눌러 제외.';
+  }
+  document.getElementById('excl-all').onclick=()=>{
+    const f=flags(); f.late.forEach(k=>EXCLUDED.add(k)); f.high.forEach(k=>EXCLUDED.add(k)); render();
+  };
+  document.getElementById('incl-all').onclick=()=>{
+    EXCLUDED=new Set(RAW.filter(r=>r.undet).map(r=>r.key)); render();
+  };
+}
+
+function renderGenes(){
+  const {res,ref,cal}=compute();
+  const box=document.getElementById('genes');
+  if(!res.length){ box.innerHTML='<div class="panel"><div class="hint">Reference 외에 분석할 유전자가 없습니다.</div></div>'; return; }
+  box.innerHTML=res.map((g,i)=>{
+    if(!g.ok) return `<div class="panel gene"><div class="gene-head"><h3>${esc(g.target)}</h3></div>
+      <div class="flagnote">Calibrator(${esc(cal)})에 남은 replicate가 없습니다. 제외를 되돌리거나 calibrator를 바꾸세요.</div></div>`;
+    const rows=g.blocks.map(b=>`
+      <tr class="${b.group===cal?'calrow':''}">
+        <td>${esc(b.group)}</td>
+        <td>${F(b.dcpMean,2)}</td>
+        <td>${b.n?F(b.mean,4):'—'}</td>
+        <td class="sd">${b.n>1?'± '+F(b.sd,4):'—'}</td>
+        <td class="n">${b.n}</td>
+      </tr>`).join('');
+    return `<div class="panel gene">
+      <div class="gene-head">
+        <h3>${esc(g.target)}</h3>
+        <span class="meta">/ ${esc(ref)} · cal = ${esc(cal)}</span>
+        <div style="flex:1"></div>
+        <button onclick="savePng(${i},'${esc(g.target).replace(/'/g,'')}')">PNG</button>
+      </div>
+      <div class="gene-body">
+        <div class="chartbox">${chart(g,cal)}</div>
+        <table class="data">
+          <thead><tr><th>Group</th><th>∆Cp</th><th>Normalized</th><th>SD</th><th>n</th></tr></thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </div>
+    </div>`;
+  }).join('');
+  document.getElementById('dl-xlsx').onclick=()=>xlsx(res,ref,cal);
+  document.getElementById('dl-csv').onclick=()=>csv(res,ref,cal);
+}
+
+/* ============ chart (축 · 눈금 · 라벨 전부 명시) ============ */
+function niceTicks(max){
+  if(!isFinite(max)||max<=0) return {top:1,step:.25};
+  const raw=max/4, p=Math.pow(10,Math.floor(Math.log10(raw))), n=raw/p;
+  const step=(n<=1?1:n<=2?2:n<=5?5:10)*p;
+  return {top:Math.ceil(max/step)*step, step};
+}
+function chart(g,cal){
+  const W=560,H=340, L=68,R=18,T=18,B=76;
+  const pw=W-L-R, ph=H-T-B;
+  const bs=g.blocks.filter(b=>b.n>0);
+  if(!bs.length) return '<svg viewBox="0 0 560 340"></svg>';
+  const hi=Math.max(...bs.map(b=>Math.max(b.mean+(b.sd||0), ...b.reps.map(r=>r.norm))));
+  const {top,step}=niceTicks(hi*1.08);
+  const y=v=>T+ph-(v/top)*ph;
+  const bw=Math.min(62, pw/bs.length*0.56), gap=pw/bs.length;
+  let s=`<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" font-family="IBM Plex Sans, sans-serif">
+  <rect width="${W}" height="${H}" fill="#fff"/>`;
+  // y grid + ticks
+  for(let v=0; v<=top+1e-9; v+=step){
+    const yy=y(v);
+    s+=`<line x1="${L}" y1="${yy}" x2="${L+pw}" y2="${yy}" stroke="${v===0?'#161D24':'#EFF2F0'}" stroke-width="${v===0?1.2:1}"/>
+    <text x="${L-10}" y="${yy+4}" text-anchor="end" font-size="11" font-family="IBM Plex Mono, monospace" fill="#5B6770">${(+v.toFixed(4))}</text>`;
+  }
+  // axes
+  s+=`<line x1="${L}" y1="${T}" x2="${L}" y2="${T+ph}" stroke="#161D24" stroke-width="1.2"/>
+  <text transform="translate(20,${T+ph/2}) rotate(-90)" text-anchor="middle" font-size="12.5" font-weight="600" fill="#161D24">Relative mRNA level</text>`;
+  // calibrator reference line at 1
+  if(1<=top) s+=`<line x1="${L}" y1="${y(1)}" x2="${L+pw}" y2="${y(1)}" stroke="#0E8C99" stroke-width="1" stroke-dasharray="4 3" opacity=".55"/>`;
+  bs.forEach((b,i)=>{
+    const cx=L+gap*i+gap/2, x0=cx-bw/2;
+    const isCal=b.group===cal;
+    const h=Math.max(0,T+ph-y(b.mean));
+    s+=`<rect x="${x0}" y="${y(b.mean)}" width="${bw}" height="${h}" rx="2"
+      fill="${isCal?'#E4F2F3':'#0E8C99'}" stroke="${isCal?'#0E8C99':'#0A6B75'}" stroke-width="1"/>`;
+    if(isFinite(b.sd)&&b.sd>0){
+      const t=y(b.mean+b.sd), bo=y(Math.max(0,b.mean-b.sd)), cw=bw*0.3;
+      s+=`<line x1="${cx}" y1="${t}" x2="${cx}" y2="${bo}" stroke="#161D24" stroke-width="1.1"/>
+      <line x1="${cx-cw}" y1="${t}" x2="${cx+cw}" y2="${t}" stroke="#161D24" stroke-width="1.1"/>
+      <line x1="${cx-cw}" y1="${bo}" x2="${cx+cw}" y2="${bo}" stroke="#161D24" stroke-width="1.1"/>`;
+    }
+    b.reps.forEach((r,j)=>{
+      const jx=cx+(j-(b.reps.length-1)/2)*7;
+      s+=`<circle cx="${jx}" cy="${y(r.norm)}" r="2.6" fill="#161D24" fill-opacity=".62"/>`;
+    });
+    const lbl=b.group.length>13?b.group.slice(0,12)+'…':b.group;
+    s+=`<text x="${cx}" y="${T+ph+18}" text-anchor="end" font-size="11" fill="#161D24"
+      transform="rotate(-32 ${cx} ${T+ph+18})">${esc(lbl)}</text>`;
+  });
+  s+=`<text x="${L+pw/2}" y="${H-6}" text-anchor="middle" font-size="12.5" font-weight="600" fill="#161D24">Group</text></svg>`;
+  return s;
+}
+function savePng(i,name){
+  const svg=document.querySelectorAll('.chartbox svg')[i];
+  const xml=new XMLSerializer().serializeToString(svg);
+  const img=new Image(), S=3;
+  img.onload=()=>{
+    const c=document.createElement('canvas');
+    c.width=560*S; c.height=340*S;
+    const x=c.getContext('2d');
+    x.fillStyle='#fff'; x.fillRect(0,0,c.width,c.height);
+    x.drawImage(img,0,0,c.width,c.height);
+    c.toBlob(b=>dl(b, name+'_chart.png'));
+  };
+  img.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(xml);
+}
+function dl(blob,name){
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob); a.download=name; a.click();
+  setTimeout(()=>URL.revokeObjectURL(a.href),1500);
+}
+
+/* ============ exports ============ */
+function xlsx(res,ref,cal){
+  const wb=XLSX.utils.book_new();
+  res.forEach(g=>{
+    if(!g.ok) return;
+    const A=[]; let r=0;
+    const put=(row,col,v)=>{ A[row]=A[row]||[]; A[row][col]=v; };
+    put(0,1,g.target+' — ΔΔCt'); put(1,1,`ref = ${ref} · calibrator = ${cal}`);
+    r=2;
+    const starts={};
+    g.blocks.forEach(b=>{
+      if(!b.n) return;
+      put(r,1,b.group);
+      [g.target,ref,'∆Cp','∆∆Cp','2^(-∆∆Cp)','Normalized'].forEach((h,j)=>put(r,2+j,h));
+      const first=r+2;                    // 엑셀 1-based
+      if(b.group===cal) starts.calAvg=first+b.n;
+      b.reps.forEach((rep,i)=>{
+        const R=r+1+i, E=R+1;             // 엑셀 행번호
+        put(R,1,i+1); put(R,2,rep.tct); put(R,3,rep.rct);
+        put(R,4,{f:`C${E}-D${E}`}); put(R,5,{f:`E${E}-$E$${starts.calAvg}`});
+        put(R,6,{f:`2^(-F${E})`}); put(R,7,{f:`G${E}/$G$${starts.calAvg}`});
+      });
+      const ra=r+1+b.n, rs=ra+1, e1=first, e2=first+b.n-1;
+      put(ra,1,'Average'); put(rs,1,'STDEV');
+      'CDEFGH'.split('').forEach((c,j)=>{
+        put(ra,2+j,{f:`AVERAGE(${c}${e1}:${c}${e2})`});
+        put(rs,2+j,{f:`STDEV(${c}${e1}:${c}${e2})`});
+      });
+      b._avgRow=ra+1; b._sdRow=rs+1;
+      r=rs+3;
+    });
+    put(r,1,'Summary'); put(r+1,1,'Group'); put(r+1,2,'Normalized Mean'); put(r+1,3,'STDEV');
+    g.blocks.filter(b=>b.n).forEach((b,i)=>{
+      put(r+2+i,1,b.group);
+      put(r+2+i,2,{f:`H${b._avgRow}`});
+      put(r+2+i,3,{f:`H${b._sdRow}`});
+    });
+    const ws=XLSX.utils.aoa_to_sheet(A);
+    ws['!cols']=[{wch:3},{wch:16},{wch:13},{wch:13},{wch:11},{wch:11},{wch:13},{wch:13}];
+    XLSX.utils.book_append_sheet(wb,ws,String(g.target).slice(0,31));
+  });
+  XLSX.writeFile(wb,'ddCt_analysis.xlsx');
+}
+function csv(res,ref,cal){
+  const L=[['Target','Group','n','dCp_mean','Normalized_mean','Normalized_SD']];
+  res.forEach(g=>{ if(!g.ok)return;
+    g.blocks.forEach(b=>{ if(!b.n)return;
+      L.push([g.target,b.group,b.n,F(b.dcpMean,4),F(b.mean,6),F(b.sd,6)]); }); });
+  dl(new Blob(['\ufeff'+L.map(r=>r.join(',')).join('\n')],{type:'text/csv;charset=utf-8'}),'ddCt_summary.csv');
+}
+</script>
+</body>
+</html>
