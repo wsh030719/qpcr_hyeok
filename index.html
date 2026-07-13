@@ -6,7 +6,8 @@
 <title>ΔΔCt — qPCR 분석기</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Spline+Sans+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
   :root{
@@ -18,31 +19,73 @@
     --shadow:0 1px 2px rgba(22,29,36,.05), 0 8px 24px -12px rgba(22,29,36,.14);
   }
   *{box-sizing:border-box;margin:0;padding:0}
+  html,body{overflow-x:hidden}
   body{background:var(--paper);color:var(--ink);
-    font-family:'IBM Plex Sans',system-ui,'Malgun Gothic',sans-serif;
+    font-family:'Pretendard Variable',Pretendard,system-ui,-apple-system,sans-serif;
     font-size:15px;line-height:1.55;-webkit-font-smoothing:antialiased;}
   .wrap{max-width:1120px;margin:0 auto;padding:0 24px 96px}
   header{border-bottom:1px solid var(--rule);background:linear-gradient(180deg,#fff,var(--paper))}
   .head-in{max-width:1120px;margin:0 auto;padding:34px 24px 30px;
     display:flex;align-items:flex-end;justify-content:space-between;gap:24px;flex-wrap:wrap}
   .mark{display:flex;align-items:center;gap:14px}
-  h1{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:30px;letter-spacing:-.02em;line-height:1.1}
+  h1{font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:30px;letter-spacing:-.02em;line-height:1.1}
   .sub{color:var(--ink-2);font-size:14px;margin-top:3px}
-  .eq{font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--ink-2);
-    background:var(--surface);border:1px solid var(--rule);border-radius:6px;padding:9px 13px;white-space:nowrap}
+  .eq{font-family:'Spline Sans Mono',monospace;font-size:12px;color:var(--ink-2);
+    background:var(--surface);border:1px solid var(--rule);border-radius:6px;padding:9px 13px;
+    max-width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch}
+  .eq code{white-space:nowrap;display:inline-block}
   .eq b{color:var(--fam-deep);font-weight:600}
+  @media(max-width:640px){
+    .head-in{padding:22px 18px 20px;gap:14px}
+    h1{font-size:25px}
+    .eq{font-size:11px;padding:8px 11px}
+    .wrap{padding:0 18px 72px}
+    .panel{padding:17px}
+    .ctrls{gap:13px}
+    .field{min-width:0;flex:1 1 100%}
+    select{max-width:100%;width:100%}
+    .filebar{flex:1 1 100%}
+    .gene-head h3{font-size:19px}
+    table.data{font-size:12px}
+    .alert{padding:13px 14px;gap:10px}
+  }
 
   .drop{margin-top:30px;background:var(--surface);border:1.5px dashed var(--rule);border-radius:12px;
     padding:52px 24px;text-align:center;cursor:pointer;transition:border-color .16s,background .16s}
   .drop:hover,.drop.over{border-color:var(--fam);background:var(--fam-wash)}
-  .drop h2{font-family:'Space Grotesk',sans-serif;font-size:19px;font-weight:500;letter-spacing:-.01em}
+  .drop h2{font-family:'Bricolage Grotesque',sans-serif;font-size:19px;font-weight:500;letter-spacing:-.01em}
   .drop p{color:var(--ink-2);font-size:13.5px;margin-top:7px}
   .drop .priv{color:var(--ink-3);font-size:12px;margin-top:16px}
   .demo-line{margin-top:22px;text-align:center;font-size:13.5px;color:var(--ink-2)}
   .demo-line button{margin-left:6px}
 
+  /* --- 어떤 파일? 가이드 --- */
+  .guide{margin-top:44px}
+  .need{display:flex;gap:10px;flex-wrap:wrap;margin:4px 0 18px}
+  .need .col{border:1.5px solid var(--fam);background:var(--fam-wash);border-radius:9px;
+    padding:9px 13px;min-width:132px}
+  .need .col .nm{font-family:'Spline Sans Mono',monospace;font-size:13px;font-weight:600;color:var(--fam-deep)}
+  .need .col .ex{font-size:11.5px;color:var(--ink-2);margin-top:2px}
+  .need .col.opt{border-color:var(--rule);background:var(--paper)}
+  .need .col.opt .nm{color:var(--ink-2)}
+  .exdemo{overflow-x:auto;margin-top:2px}
+  table.ex{border-collapse:collapse;font-family:'Spline Sans Mono',monospace;font-size:12px;min-width:400px}
+  table.ex th{background:var(--paper);border:1px solid var(--rule);padding:6px 11px;
+    font-weight:600;color:var(--ink-2);text-align:left;font-size:11px}
+  table.ex td{border:1px solid var(--rule);padding:5px 11px;color:var(--ink)}
+  table.ex tr:nth-child(even) td{background:#FBFCFB}
+  .instr{width:100%;border-collapse:collapse;font-size:13px;margin-top:4px}
+  .instr th{text-align:left;font-size:11px;font-family:'Spline Sans Mono',monospace;letter-spacing:.05em;
+    text-transform:uppercase;color:var(--ink-3);padding:0 12px 8px 0;border-bottom:1px solid var(--rule)}
+  .instr td{padding:9px 12px 9px 0;border-bottom:1px solid #EFF2F0;vertical-align:top}
+  .instr td:first-child{font-weight:600;white-space:nowrap}
+  .instr td:nth-child(2){color:var(--ink-2)}
+  .instr code{font-family:'Spline Sans Mono',monospace;background:var(--paper);
+    padding:1px 6px;border-radius:4px;font-size:12px;color:var(--fam-deep)}
+  @media(max-width:640px){ .instr td:first-child{white-space:normal} }
+
   section{margin-top:38px}
-  .eyebrow{font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:600;letter-spacing:.13em;
+  .eyebrow{font-family:'Spline Sans Mono',monospace;font-size:11px;font-weight:600;letter-spacing:.13em;
     text-transform:uppercase;color:var(--ink-3);display:flex;align-items:center;gap:11px;margin-bottom:14px}
   .eyebrow::after{content:"";flex:1;height:1px;background:var(--rule)}
   .panel{background:var(--surface);border:1px solid var(--rule);border-radius:12px;padding:22px;box-shadow:var(--shadow)}
@@ -50,7 +93,7 @@
   .ctrls{display:flex;gap:20px;flex-wrap:wrap;align-items:flex-end}
   .field{display:flex;flex-direction:column;gap:6px;min-width:160px}
   label{font-size:12px;font-weight:600;color:var(--ink-2)}
-  select{font-family:'IBM Plex Sans',sans-serif;font-size:14px;color:var(--ink);padding:8px 11px;
+  select{font-family:'Pretendard Variable',Pretendard,sans-serif;font-size:14px;color:var(--ink);padding:8px 11px;
     border:1px solid var(--rule);border-radius:7px;background:var(--surface);outline:none;max-width:230px}
   select:focus{border-color:var(--fam);box-shadow:0 0 0 3px var(--fam-wash)}
   .switch{display:flex;align-items:center;gap:9px;font-size:13.5px;cursor:pointer;padding-bottom:9px}
@@ -59,7 +102,7 @@
   .chip{font-size:12.5px;padding:5px 10px;border:1px solid var(--rule);border-radius:20px;background:var(--paper);
     cursor:grab;user-select:none;display:flex;align-items:center;gap:7px}
   .chip.drag{opacity:.35}
-  .chip .idx{font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:var(--ink-3)}
+  .chip .idx{font-family:'Spline Sans Mono',monospace;font-size:10.5px;color:var(--ink-3)}
   .chip.cal{border-color:var(--fam);background:var(--fam-wash);color:var(--fam-deep);font-weight:600}
   .hint{font-size:12px;color:var(--ink-3);margin-top:9px}
 
@@ -78,13 +121,13 @@
   .dot{width:9px;height:9px;border-radius:50%;display:inline-block}
   .plate-scroll{overflow-x:auto;padding:8px 2px 4px;margin:0 -4px;-webkit-overflow-scrolling:touch}
   .plate{border-collapse:separate;border-spacing:4px}
-  .plate th{font-family:'IBM Plex Mono',monospace;font-size:10.5px;font-weight:500;color:var(--ink-3);padding:0 2px}
+  .plate th{font-family:'Spline Sans Mono',monospace;font-size:10.5px;font-weight:500;color:var(--ink-3);padding:0 2px}
   .well{width:74px;height:50px;border-radius:8px;border:1px solid var(--rule);background:var(--paper);
     cursor:pointer;padding:5px 4px;text-align:center;transition:transform .1s,box-shadow .12s}
   .well:hover{transform:translateY(-1px);box-shadow:0 3px 10px -3px rgba(22,29,36,.22)}
   .well.empty{background:transparent;border:1px dashed #EAEEEC;cursor:default}
   .well.empty:hover{transform:none;box-shadow:none}
-  .well .ct{font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:600;line-height:1.15}
+  .well .ct{font-family:'Spline Sans Mono',monospace;font-size:13px;font-weight:600;line-height:1.15}
   .well .tg{font-size:9.5px;color:var(--ink-3);line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .well.ok{border-color:#C9DCDB}
   .well.warn{background:var(--vic-wash);border-color:#E7CE9B}
@@ -95,10 +138,13 @@
   .well.off .ct{color:var(--ink-3);text-decoration:line-through}
   .well.off .tg{color:#BCC5C9}
   .qcbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:16px;padding-top:15px;border-top:1px solid var(--rule)}
-  .flagnote{font-size:13px;color:var(--ink-2);background:var(--rox-wash);border-left:3px solid var(--rox);
-    border-radius:0 7px 7px 0;padding:9px 13px}
-  .flagnote.none{background:var(--fam-wash);border-left-color:var(--fam)}
-  button{font-family:'IBM Plex Sans',sans-serif;font-size:13px;font-weight:600;padding:8px 15px;border-radius:7px;
+  .flagnote{font-size:13.5px;font-weight:500;color:#8E2620;background:var(--rox-wash);
+    border:1.5px solid #F0B4AF;border-radius:9px;padding:11px 14px;display:flex;gap:9px;align-items:center}
+  .flagnote::before{content:"!";flex:0 0 auto;width:19px;height:19px;border-radius:50%;background:var(--rox);
+    color:#fff;font-weight:800;font-size:12px;display:grid;place-items:center}
+  .flagnote.none{background:var(--fam-wash);border-color:#A8D3D6;color:var(--fam-deep);font-weight:400}
+  .flagnote.none::before{content:"✓";background:var(--fam);font-size:11px}
+  button{font-family:'Pretendard Variable',Pretendard,sans-serif;font-size:13px;font-weight:600;padding:8px 15px;border-radius:7px;
     border:1px solid var(--rule);background:var(--surface);color:var(--ink);cursor:pointer;transition:.12s}
   button:hover{border-color:var(--ink-3)}
   button.solid{background:var(--fam);border-color:var(--fam);color:#fff}
@@ -108,17 +154,17 @@
 
   .gene{margin-top:22px}
   .gene-head{display:flex;align-items:baseline;gap:12px;margin-bottom:16px;flex-wrap:wrap}
-  .gene-head h3{font-family:'Space Grotesk',sans-serif;font-size:21px;font-weight:700;letter-spacing:-.01em}
-  .gene-head .meta{font-size:12px;color:var(--ink-3);font-family:'IBM Plex Mono',monospace}
+  .gene-head h3{font-family:'Bricolage Grotesque',sans-serif;font-size:21px;font-weight:700;letter-spacing:-.01em}
+  .gene-head .meta{font-size:12px;color:var(--ink-3);font-family:'Spline Sans Mono',monospace}
   .gene-body{display:grid;grid-template-columns:minmax(0,1.02fr) minmax(0,1fr);gap:26px;align-items:start}
   @media(max-width:920px){.gene-body{grid-template-columns:1fr}}
   table.data{width:100%;border-collapse:collapse;font-size:13px}
-  table.data th{font-family:'IBM Plex Mono',monospace;font-size:10.5px;font-weight:600;letter-spacing:.06em;
+  table.data th{font-family:'Spline Sans Mono',monospace;font-size:10.5px;font-weight:600;letter-spacing:.06em;
     text-transform:uppercase;color:var(--ink-3);text-align:right;padding:0 0 8px;border-bottom:1px solid var(--rule)}
   table.data th:first-child{text-align:left}
   table.data td{padding:7px 0;border-bottom:1px solid #EFF2F0;text-align:right;
-    font-family:'IBM Plex Mono',monospace;font-variant-numeric:tabular-nums}
-  table.data td:first-child{text-align:left;font-family:'IBM Plex Sans',sans-serif;font-weight:500}
+    font-family:'Spline Sans Mono',monospace;font-variant-numeric:tabular-nums}
+  table.data td:first-child{text-align:left;font-family:'Pretendard Variable',Pretendard,sans-serif;font-weight:500}
   table.data tr.calrow td{background:var(--fam-wash)}
   table.data tr.calrow td:first-child{color:var(--fam-deep);border-radius:5px 0 0 5px;padding-left:7px}
   table.data tr.calrow td:last-child{border-radius:0 5px 5px 0;padding-right:7px}
@@ -129,7 +175,7 @@
   .chartbox{border:1px solid var(--rule);border-radius:10px;padding:6px;background:var(--surface)}
   .chartbox svg{width:100%;height:auto;display:block}
   .anova{font-size:12.5px;color:var(--ink-2);margin-top:12px;padding:9px 12px;background:var(--paper);
-    border-radius:7px;font-family:'IBM Plex Mono',monospace}
+    border-radius:7px;font-family:'Spline Sans Mono',monospace}
   .anova b{color:var(--ink)}
 
   details.trace{margin-top:16px;border-top:1px solid var(--rule);padding-top:13px}
@@ -138,21 +184,62 @@
   details.trace summary::before{content:"▸";transition:transform .15s;display:inline-block}
   details.trace[open] summary::before{transform:rotate(90deg)}
   .tracetbl{width:100%;border-collapse:collapse;font-size:12px;margin-top:12px}
-  .tracetbl th{font-family:'IBM Plex Mono',monospace;font-size:10px;font-weight:600;letter-spacing:.05em;
+  .tracetbl th{font-family:'Spline Sans Mono',monospace;font-size:10px;font-weight:600;letter-spacing:.05em;
     text-transform:uppercase;color:var(--ink-3);text-align:right;padding:0 6px 7px;border-bottom:1px solid var(--rule)}
   .tracetbl th:first-child,.tracetbl th:nth-child(2){text-align:left}
   .tracetbl td{padding:5px 6px;text-align:right;border-bottom:1px solid #F2F4F2;
-    font-family:'IBM Plex Mono',monospace;font-variant-numeric:tabular-nums}
+    font-family:'Spline Sans Mono',monospace;font-variant-numeric:tabular-nums}
   .tracetbl td:first-child,.tracetbl td:nth-child(2){text-align:left}
   .tracetbl tr.gsep td{padding-top:11px}
-  .tracetbl .gname{font-family:'IBM Plex Sans',sans-serif;font-weight:600}
+  .tracetbl .gname{font-family:'Pretendard Variable',Pretendard,sans-serif;font-weight:600}
   .tracetbl .calc{color:var(--ink-3);font-size:11px}
 
   .export{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
   .export .note{font-size:12.5px;color:var(--ink-3)}
   .hidden{display:none}
+
+  /* --- 방식 비교 --- */
+  .cmp{width:100%;border-collapse:collapse;font-size:13px}
+  .cmp th{font-family:'Spline Sans Mono',monospace;font-size:10.5px;font-weight:600;letter-spacing:.05em;
+    text-transform:uppercase;color:var(--ink-3);text-align:right;padding:0 10px 8px 0;border-bottom:1px solid var(--rule)}
+  .cmp th:first-child,.cmp th:nth-child(2){text-align:left}
+  .cmp td{padding:7px 10px 7px 0;border-bottom:1px solid #EFF2F0;text-align:right;
+    font-family:'Spline Sans Mono',monospace;font-variant-numeric:tabular-nums}
+  .cmp td:first-child,.cmp td:nth-child(2){text-align:left;font-family:'Pretendard Variable',Pretendard,sans-serif}
+  .cmp td:first-child{font-weight:600}
+  .cmp tr.gsep td{padding-top:12px}
+  .cmp .cur{color:var(--fam-deep);font-weight:600}
+  .cmp .low{color:var(--rox);font-weight:600}
+  .cmp .mode{font-size:12px;color:var(--ink-2)}
+
+  /* --- 홈 --- */
+  .mark{cursor:pointer;border-radius:10px;padding:4px 6px;margin:-4px -6px;transition:background .13s}
+  .mark:hover{background:var(--fam-wash)}
+  .mark:focus-visible{outline:2px solid var(--fam);outline-offset:2px}
+  .filebar{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--ink-2);
+    background:var(--paper);border:1px solid var(--rule);border-radius:8px;padding:7px 12px}
+  .filebar .fn{font-family:'Spline Sans Mono',monospace;color:var(--ink);font-weight:500;
+    max-width:230px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+  /* --- 경고 (강화) --- */
+  .alert{display:flex;gap:13px;align-items:flex-start;padding:15px 17px;border-radius:11px;
+    border:1.5px solid;margin-bottom:18px}
+  .alert .ico{flex:0 0 auto;width:21px;height:21px;border-radius:50%;display:grid;place-items:center;
+    font-size:13px;font-weight:800;color:#fff;margin-top:1px}
+  .alert .txt{font-size:13.5px;line-height:1.6}
+  .alert .txt b{font-weight:700;display:block;margin-bottom:3px;font-size:14px}
+  .alert.danger{background:var(--rox-wash);border-color:#F0B4AF;color:#8E2620}
+  .alert.danger .ico{background:var(--rox)}
+  .alert.danger b{color:var(--rox)}
+  .alert.caution{background:var(--vic-wash);border-color:#EDCE94;color:#7A5310}
+  .alert.caution .ico{background:var(--vic)}
+  .alert.caution b{color:#9A6510}
+  .alert.calm{background:var(--fam-wash);border-color:#A8D3D6;color:#0A5158}
+  .alert.calm .ico{background:var(--fam)}
+  .alert.calm b{color:var(--fam-deep)}
+  .alert .act{margin-left:auto;flex:0 0 auto}
   footer{margin-top:56px;padding-top:22px;border-top:1px solid var(--rule);font-size:12.5px;color:var(--ink-3);line-height:1.75}
-  footer code{font-family:'IBM Plex Mono',monospace;background:var(--paper);padding:1px 5px;border-radius:4px;color:var(--ink-2)}
+  footer code{font-family:'Spline Sans Mono',monospace;background:var(--paper);padding:1px 5px;border-radius:4px;color:var(--ink-2)}
   footer b{color:var(--ink-2)}
 </style>
 </head>
@@ -160,7 +247,7 @@
 
 <header>
   <div class="head-in">
-    <div class="mark">
+    <div class="mark" id="home" tabindex="0" role="button" title="처음으로">
       <svg width="38" height="38" viewBox="0 0 38 38" fill="none" aria-hidden="true">
         <rect x="1" y="1" width="36" height="36" rx="9" fill="#E4F2F3" stroke="#0E8C99" stroke-width="1.4"/>
         <path d="M7 28c6.5 0 5-13 12-13s5.5 9 12 9" stroke="#0E8C99" stroke-width="2.1" stroke-linecap="round" fill="none"/>
@@ -168,7 +255,7 @@
       </svg>
       <div><h1>ΔΔCt</h1><div class="sub">qPCR 결과 파일을 상대 발현량으로</div></div>
     </div>
-    <div class="eq">∆Cp = Ct<sub>target</sub> − Ct<sub>ref</sub> → ∆∆Cp = ∆Cp − ∆Cp<sub>cal</sub> → <b>2^(−∆∆Cp)</b></div>
+    <div class="eq"><code>∆Cp = Ct<sub>target</sub> − Ct<sub>ref</sub> &nbsp;→&nbsp; ∆∆Cp = ∆Cp − ∆Cp<sub>cal</sub> &nbsp;→&nbsp; <b>2^(−∆∆Cp)</b></code></div>
   </div>
 </header>
 
@@ -181,6 +268,63 @@
       <input type="file" id="file" accept=".xlsx,.xls,.csv" class="hidden">
     </div>
     <div class="demo-line">파일이 없어도 괜찮음.<button class="link" id="demo">예시 데이터로 먼저 해보기</button></div>
+
+    <section class="guide">
+      <div class="eyebrow">어떤 파일을 올리면 되나</div>
+      <div class="panel">
+        <p style="font-size:14px;line-height:1.65">
+          기기 소프트웨어에서 <b>결과 표를 그대로 내보낸 파일</b>이면 됩니다. 가공하지 말고 export한 원본을 그대로 올리세요.
+          컬럼 이름이 달라도 <b>세 가지 정보</b>만 들어 있으면 읽습니다.
+        </p>
+        <div class="need">
+          <div class="col"><div class="nm">Sample</div><div class="ex">CON, Cis 25uM …</div></div>
+          <div class="col"><div class="nm">Target</div><div class="ex">GAPDH, MuRF1 …</div></div>
+          <div class="col"><div class="nm">Ct / Cq / Cp</div><div class="ex">21.76, 15.89 …</div></div>
+          <div class="col opt"><div class="nm">Well</div><div class="ex">선택 — plate 그림용</div></div>
+        </div>
+        <div class="exdemo">
+          <table class="ex">
+            <tr><th>Well</th><th>Sample Name</th><th>Target Name</th><th>CT</th></tr>
+            <tr><td>A1</td><td>CON</td><td>GAPDH</td><td>15.8979</td></tr>
+            <tr><td>A2</td><td>CON</td><td>GAPDH</td><td>15.5161</td></tr>
+            <tr><td>A3</td><td>CON</td><td>GAPDH</td><td>15.7701</td></tr>
+            <tr><td>B1</td><td>CON</td><td>MuRF1</td><td>21.7651</td></tr>
+          </table>
+        </div>
+        <div class="alert danger" style="margin:20px 0 22px">
+          <div class="ico">!</div>
+          <div class="txt"><b>replicate 한 줄씩 그대로 있어야 합니다</b>
+            평균이 미리 계산된 <code style="font-family:'Spline Sans Mono',monospace">Ct Mean</code> 표는 쓸 수 없습니다.
+            3반복이면 같은 조합이 3줄로 있어야 SD와 p값이 나옵니다.</div>
+        </div>
+
+        <div class="eyebrow" style="margin-top:26px">기기별로 어디서 내보내나</div>
+        <table class="instr">
+          <thead><tr><th>기기 · 소프트웨어</th><th>내보내는 방법</th><th>Ct 컬럼</th></tr></thead>
+          <tbody>
+            <tr><td>Applied Biosystems<br>QuantStudio</td>
+              <td>Design &amp; Analysis 또는 QuantStudio SW → <b>Export</b> → Results (.xlsx)</td>
+              <td><code>CT</code></td></tr>
+            <tr><td>ABI 7500 · StepOnePlus<br>(SDS)</td>
+              <td>File → Export → <b>Results</b> (.xls / .txt)</td>
+              <td><code>CT</code></td></tr>
+            <tr><td>Bio-Rad CFX<br>(CFX Maestro)</td>
+              <td>Export → <b>Quantification Cq Results</b> (.csv)</td>
+              <td><code>Cq</code></td></tr>
+            <tr><td>Roche LightCycler 480</td>
+              <td>Analysis 화면 → 표 우클릭 → <b>Export table</b> (.txt)</td>
+              <td><code>Cp</code></td></tr>
+            <tr><td>Agilent AriaMx</td>
+              <td>Export → <b>Tabular Results</b> (.csv)</td>
+              <td><code>Cq</code></td></tr>
+          </tbody>
+        </table>
+        <div class="hint" style="margin-top:16px;line-height:1.7">
+          목록에 없는 기기여도 괜찮습니다. 표 형태이기만 하면 올린 뒤 <b>컬럼 매핑</b>에서
+          어느 열이 무엇인지 직접 지정할 수 있습니다. 시트가 여러 개인 파일도 시트를 골라서 읽습니다.
+        </div>
+      </div>
+    </section>
   </div>
 
   <div id="app" class="hidden">
@@ -190,9 +334,15 @@
         <div class="ctrls">
           <div class="field"><label for="ref">Reference (housekeeping)</label><select id="ref"></select></div>
           <div class="field"><label for="cal">Calibrator (=1 기준군)</label><select id="cal"></select></div>
-          <label class="switch"><input type="checkbox" id="sortct" checked> Ct 오름차순 정렬 후 pairing</label>
+          <div class="field"><label for="pairmode">Replicate 처리 방식</label>
+            <select id="pairmode">
+              <option value="sorted">Ct 정렬 후 pairing (랩 관행)</option>
+              <option value="well">well 순서대로 pairing</option>
+              <option value="nopair">pairing 안 함 — reference 평균으로 (권장)</option>
+            </select></div>
           <div style="flex:1"></div>
-          <button id="reset">다른 파일 열기</button>
+          <div class="filebar"><span>열린 파일</span><span class="fn" id="fname">—</span></div>
+          <button id="reset">처음으로</button>
         </div>
         <div class="chips" id="chips"></div>
         <div class="hint">칩을 끌어서 그래프 x축 순서를 바꿀 수 있음.</div>
@@ -201,6 +351,7 @@
           <summary>컬럼 매핑 — 기기·소프트웨어마다 헤더가 다를 때</summary>
           <div class="body">
             <div class="mapgrid">
+              <div class="field" id="sheetfield"><label for="m-sheet">시트</label><select id="m-sheet"></select></div>
               <div class="field"><label for="m-hdr">헤더 행</label><select id="m-hdr"></select></div>
               <div class="field"><label for="m-smp">Sample (실험군)</label><select id="m-smp"></select></div>
               <div class="field"><label for="m-tgt">Target (유전자)</label><select id="m-tgt"></select></div>
@@ -237,7 +388,34 @@
 
     <section>
       <div class="eyebrow">결과</div>
+      <div id="alerts"></div>
+      <div class="alert caution">
+        <div class="ico">!</div>
+        <div class="txt">
+          <b>p값은 스크리닝용입니다</b>
+          여기 3반복은 technical replicate라 생물학적 반복이 아닙니다. n=3에서는 검정력이 매우 낮고
+          정규성 확인도 불가능합니다. 논문·발표에 실을 통계는 독립적으로 반복한 실험으로 확인하세요.
+        </div>
+      </div>
       <div id="genes"></div>
+    </section>
+
+    <section>
+      <div class="eyebrow">방식 비교</div>
+      <div class="panel">
+        <p style="font-size:13.5px;line-height:1.7;margin-bottom:16px">
+          Technical replicate는 서로 교환 가능한 값이라 어떻게 짝지어도 <b>평균은 같습니다</b>.
+          달라지는 건 <b>SD와 p값</b>뿐입니다. Ct를 정렬해서 짝지으면 큰 값끼리·작은 값끼리 묶이면서
+          차이가 상쇄돼 SD가 인위적으로 작아집니다. 아래 표에서 같은 데이터가 방식에 따라
+          얼마나 다르게 보이는지 확인하세요.
+        </p>
+        <div style="overflow-x:auto"><table class="cmp" id="cmptbl"></table></div>
+        <div class="hint" style="margin-top:14px;line-height:1.7">
+          <b style="color:var(--ink-2)">pairing 안 함</b>이 통계적으로 가장 방어하기 쉽습니다 —
+          ∆Cp = 각 target replicate − reference의 평균. 짝짓는 순서라는 임의의 선택이 아예 없어지고,
+          SD가 target의 실제 변동을 반영합니다.
+        </div>
+      </div>
     </section>
 
     <section>
@@ -251,7 +429,9 @@
 
     <footer>
       <b>계산.</b> Reference로 정규화 후 calibrator를 1로 두는 2<sup>−∆∆Ct</sup> (Livak) 방식.
-      Replicate pairing은 그룹 내에서 target·reference Ct를 각각 오름차순 정렬해 짝지음(옵션 해제 시 well 순서).
+      Replicate 처리는 세 가지 중 선택 — Ct 정렬 pairing(많은 랩의 관행), well 순서 pairing,
+      또는 pairing 없이 각 target replicate에서 reference 평균을 빼는 방식.
+      technical replicate는 교환 가능한 값이라 평균은 셋 다 같고, <b>SD와 p값만 달라집니다.</b>
       막대 = 정규화값 평균, 오차막대 = 표본표준편차(<code>STDEV</code>, n−1), 점 = 개별 replicate.<br>
       <b>통계.</b> 검정은 <code>∆Cp</code> 값으로 수행함 — fold-change(2<sup>−∆∆Ct</sup>)는 로그 변환된 값을 지수로 되돌린 것이라
       분포가 한쪽으로 치우쳐 t-검정 가정에 맞지 않음. 각 군 vs calibrator는 Welch t-검정, 다중비교는 Holm 보정.
@@ -264,9 +444,10 @@
 
 <script>
 /* ================= state ================= */
-let ROWS=[];          // 원본 시트 (2차원 배열)
+let WB=null;          // 워크북 전체 (시트 여러 개일 수 있음)
+let ROWS=[];          // 현재 시트 (2차원 배열)
 let MAP={hdr:-1,smp:-1,tgt:-1,ct:-1,well:-1};
-let RAW=[], EXCLUDED=new Set(), ORDER=[];
+let RAW=[], EXCLUDED=new Set(), ORDER=[], FNAME='';
 const CT_LATE=35, SD_HIGH=0.5;
 const F=(x,d=4)=>(x==null||!isFinite(x))?'—':x.toFixed(d);
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -360,24 +541,70 @@ drop.ondrop=e=>{e.preventDefault();drop.classList.remove('over');if(e.dataTransf
 fileIn.onchange=e=>{if(e.target.files[0])read(e.target.files[0]);};
 document.getElementById('demo').onclick=()=>{
   ROWS=[['Well Position','Sample Name','Target Name','CT'],...DEMO];
-  MAP={hdr:0,smp:1,tgt:2,ct:3,well:0};
+  MAP={hdr:0,smp:1,tgt:2,ct:3,well:0}; FNAME='예시 데이터'; WB=null;
+  document.getElementById('sheetfield').style.display='none';
   buildMapUI(true); ingest();
 };
-document.getElementById('reset').onclick=()=>location.reload();
+function goHome(){
+  WB=null; ROWS=[]; RAW=[]; EXCLUDED=new Set(); ORDER=[]; FNAME='';
+  MAP={hdr:-1,smp:-1,tgt:-1,ct:-1,well:-1};
+  fileIn.value='';
+  document.getElementById('app').classList.add('hidden');
+  document.getElementById('landing').classList.remove('hidden');
+  document.getElementById('genes').innerHTML='';
+  document.getElementById('plate').innerHTML='';
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+document.getElementById('reset').onclick=goHome;
+const homeBtn=document.getElementById('home');
+homeBtn.onclick=()=>{ if(!document.getElementById('app').classList.contains('hidden')) goHome(); };
+homeBtn.onkeydown=e=>{ if(e.key==='Enter'||e.key===' '){e.preventDefault();homeBtn.onclick();} };
 
 function read(file){
+  FNAME=file.name;
   const fr=new FileReader();
   fr.onload=ev=>{
-    let wb;
-    try{ wb=XLSX.read(new Uint8Array(ev.target.result),{type:'array'}); }
+    try{ WB=XLSX.read(new Uint8Array(ev.target.result),{type:'array'}); }
     catch(e){ return fail('파일을 읽지 못했습니다. .xlsx / .xls / .csv 인지 확인하세요.'); }
-    ROWS=XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{header:1,defval:null,raw:true});
-    if(!ROWS.length) return fail('빈 시트입니다.');
-    autoMap();
-    buildMapUI(MAP.hdr>=0 && MAP.smp>=0 && MAP.tgt>=0 && MAP.ct>=0);
-    ingest();
+    if(!WB.SheetNames.length) return fail('시트가 없습니다.');
+    const best=pickSheet();          // Sample/Target/Ct 가 있는 시트를 우선 선택
+    loadSheet(best, true);
   };
   fr.readAsArrayBuffer(file);
+}
+/** 필요한 컬럼이 있는 시트를 점수로 골라냄 */
+function pickSheet(){
+  let best=WB.SheetNames[0], bestScore=-1;
+  WB.SheetNames.forEach(nm=>{
+    const rows=XLSX.utils.sheet_to_json(WB.Sheets[nm],{header:1,defval:null,raw:true});
+    let sc=0;
+    for(let i=0;i<Math.min(rows.length,60);i++){
+      const r=(rows[i]||[]).map(norm);
+      const hit=['samplename','sample','targetname','target','detector','ct','cq','cp']
+        .filter(k=>r.includes(k)).length;
+      sc=Math.max(sc,hit);
+    }
+    sc+=Math.min(rows.length,500)/10000;   // 동점이면 행 많은 쪽
+    if(sc>bestScore){ bestScore=sc; best=nm; }
+  });
+  return best;
+}
+function loadSheet(name, auto){
+  ROWS=XLSX.utils.sheet_to_json(WB.Sheets[name],{header:1,defval:null,raw:true});
+  if(!ROWS.length){ document.getElementById('genes').innerHTML=
+    '<div class="panel"><div class="flagnote">비어 있는 시트입니다. 다른 시트를 골라보세요.</div></div>'; }
+  if(auto) autoMap();
+  buildSheetUI(name);
+  buildMapUI(MAP.hdr>=0 && MAP.smp>=0 && MAP.tgt>=0 && MAP.ct>=0);
+  ingest();
+}
+function buildSheetUI(cur){
+  const f=document.getElementById('sheetfield');
+  const sel=document.getElementById('m-sheet');
+  if(!WB || WB.SheetNames.length<2){ f.style.display='none'; return; }
+  f.style.display='';
+  sel.innerHTML=WB.SheetNames.map(n=>`<option ${n===cur?'selected':''}>${esc(n)}</option>`).join('');
+  sel.onchange=()=>loadSheet(sel.value, true);
 }
 function fail(msg){
   document.getElementById('drop').innerHTML=
@@ -486,7 +713,7 @@ function ingest(){
     document.getElementById('app').classList.remove('hidden');
     document.getElementById('landing').classList.add('hidden');
     document.getElementById('genes').innerHTML=
-      '<div class="panel"><div class="flagnote">데이터 행을 읽지 못했습니다. 위의 <b>컬럼 매핑</b>에서 헤더 행과 컬럼을 확인하세요.</div></div>';
+      '<div class="panel"><div class="flagnote">데이터 행을 읽지 못했습니다. 위의 <b>컬럼 매핑</b>에서 시트·헤더 행·컬럼을 확인하세요.</div></div>';
     document.getElementById('plate').innerHTML='';
     document.getElementById('mapbox').open=true;
     return;
@@ -503,8 +730,9 @@ function ingest(){
   calSel.innerHTML=samples.map(s=>`<option>${esc(s)}</option>`).join('');
   const c=samples.find(s=>/^(con|ctl|ctrl|control|nc|veh|vehicle|untreated|mock|wt)/i.test(s.trim()));
   calSel.value=c||samples[0];
-  refSel.onchange=calSel.onchange=document.getElementById('sortct').onchange=render;
+  refSel.onchange=calSel.onchange=document.getElementById('pairmode').onchange=render;
 
+  document.getElementById('fname').textContent=FNAME||'—';
   document.getElementById('landing').classList.add('hidden');
   document.getElementById('app').classList.remove('hidden');
   render();
@@ -522,21 +750,31 @@ function flags(){
   });
   return {late,high};
 }
-function compute(){
+/** 그룹×타겟 -> replicate별 ∆Cp. mode: sorted | well | nopair */
+function makeReps(g,tgt,ref,mode){
+  let tv=activeCts(g,tgt), gv=activeCts(g,ref);
+  if(mode==='nopair'){
+    if(!tv.length||!gv.length) return [];
+    const rm=mean(gv.map(x=>x.ct));           // reference 평균 하나로 모든 rep을 나눔
+    return tv.map(x=>({tct:x.ct, rct:rm, dcp:x.ct-rm, refIsMean:true}));
+  }
+  if(mode==='sorted'){ tv=[...tv].sort((a,b)=>a.ct-b.ct); gv=[...gv].sort((a,b)=>a.ct-b.ct); }
+  const n=Math.min(tv.length,gv.length), reps=[];
+  for(let i=0;i<n;i++) reps.push({tct:tv[i].ct, rct:gv[i].ct, dcp:tv[i].ct-gv[i].ct});
+  return reps;
+}
+function compute(mode){
   const ref=document.getElementById('ref').value;
   const cal=document.getElementById('cal').value;
-  const doSort=document.getElementById('sortct').checked;
+  mode=mode||document.getElementById('pairmode').value;
   const targets=[...new Set(RAW.map(r=>r.target))].filter(t=>t!==ref);
   const groups=ORDER.filter(g=>RAW.some(r=>r.sample===g));
   const out=[];
   for(const tgt of targets){
     const blocks=[];
     for(const g of groups){
-      let tv=activeCts(g,tgt), gv=activeCts(g,ref);
-      if(doSort){ tv=[...tv].sort((a,b)=>a.ct-b.ct); gv=[...gv].sort((a,b)=>a.ct-b.ct); }
-      const n=Math.min(tv.length,gv.length), reps=[];
-      for(let i=0;i<n;i++) reps.push({tct:tv[i].ct, rct:gv[i].ct, dcp:tv[i].ct-gv[i].ct});
-      blocks.push({group:g,n,reps});
+      const reps=makeReps(g,tgt,ref,mode);
+      blocks.push({group:g,n:reps.length,reps});
     }
     const calB=blocks.find(b=>b.group===cal);
     if(!calB||!calB.n){ out.push({target:tgt,blocks,ok:false}); continue; }
@@ -558,11 +796,85 @@ function compute(){
     const av=anova(blocks.filter(b=>b.n>=2).map(b=>b.dcp));
     out.push({target:tgt,blocks,ok:true,anova:av,calDcp,calPow});
   }
-  return {res:out, ref, cal, groups};
+  return {res:out, ref, cal, groups, mode};
 }
 
 /* ============ 렌더 ============ */
-function render(){ renderChips(); renderPlate(); renderGenes(); }
+function render(){ renderChips(); renderPlate(); renderGenes(); renderAlerts(); renderCompare(); }
+
+const MODES=[['sorted','Ct 정렬 pairing'],['well','well 순서 pairing'],['nopair','pairing 안 함']];
+function renderCompare(){
+  const cur=document.getElementById('pairmode').value;
+  const cal=document.getElementById('cal').value;
+  const runs={}; MODES.forEach(([m])=>runs[m]=compute(m).res);
+  const genes=runs[cur].filter(g=>g.ok).map(g=>g.target);
+  let h=`<thead><tr><th>유전자</th><th>방식</th><th>Norm. 평균 범위</th><th>평균 SD</th>
+    <th>ANOVA p</th><th>유의한 군</th></tr></thead><tbody>`;
+  genes.forEach((tgt,gi)=>{
+    MODES.forEach(([m,lbl],mi)=>{
+      const g=runs[m].find(x=>x.target===tgt);
+      if(!g||!g.ok) return;
+      const bl=g.blocks.filter(b=>b.n);
+      const means=bl.map(b=>b.mean), sds=bl.filter(b=>isFinite(b.sd)).map(b=>b.sd);
+      const avgSd=sds.length?mean(sds):NaN;
+      const nsig=bl.filter(b=>b.group!==cal&&isFinite(b.padj)&&b.padj<0.05).length;
+      const isCur=m===cur;
+      // 가장 작은 평균 SD면 빨간색 (= 과소평가 신호)
+      const allSd=MODES.map(([mm])=>{
+        const gg=runs[mm].find(x=>x.target===tgt);
+        if(!gg||!gg.ok) return NaN;
+        const ss=gg.blocks.filter(b=>b.n&&isFinite(b.sd)).map(b=>b.sd);
+        return ss.length?mean(ss):NaN;
+      }).filter(isFinite);
+      const isMin=allSd.length>1 && Math.abs(avgSd-Math.min(...allSd))<1e-9;
+      h+=`<tr class="${mi===0&&gi?'gsep':''}">
+        <td>${mi===0?esc(tgt):''}</td>
+        <td class="mode ${isCur?'cur':''}">${lbl}${isCur?' ·  선택됨':''}</td>
+        <td>${F(Math.min(...means),3)} – ${F(Math.max(...means),3)}</td>
+        <td class="${isMin?'low':''}">${F(avgSd,4)}</td>
+        <td>${pTxt(g.anova.p)}</td>
+        <td>${nsig} / ${bl.length-1}</td></tr>`;
+    });
+  });
+  document.getElementById('cmptbl').innerHTML=h+'</tbody>';
+}
+
+/** 결과 위쪽에 뜨는 QC 요약 경고 */
+function renderAlerts(){
+  const box=document.getElementById('alerts');
+  const {late,high}=flags();
+  const L=[...late].filter(k=>!EXCLUDED.has(k)).map(k=>RAW.find(r=>r.key===k));
+  const H=[...high].filter(k=>!EXCLUDED.has(k)&&!late.has(k)).map(k=>RAW.find(r=>r.key===k));
+  let h='';
+  if(L.length){
+    const combos=[...new Set(L.map(r=>r.sample+' · '+r.target))];
+    h+=`<div class="alert danger">
+      <div class="ico">!</div>
+      <div class="txt"><b>증폭이 실패했을 수 있는 웰이 ${L.length}개 있습니다</b>
+        Ct가 35를 넘거나 검출되지 않았습니다. 실제 발현 감소가 아니라 primer-dimer나 반응 실패일 가능성이 큽니다.
+        아래 결과에 그대로 반영되어 있으니, 제외할지 판단하세요.<br>
+        <span style="font-family:'Spline Sans Mono',monospace;font-size:12px;opacity:.85">${combos.slice(0,6).map(esc).join(' / ')}${combos.length>6?' …':''}</span>
+      </div>
+      <button class="act" id="a-late">해당 웰 제외</button></div>`;
+  }
+  if(H.length){
+    const combos=[...new Set(H.map(r=>r.sample+' · '+r.target))];
+    h+=`<div class="alert caution">
+      <div class="ico">!</div>
+      <div class="txt"><b>replicate 산포가 큰 조합이 ${combos.length}개 있습니다</b>
+        같은 조건인데 Ct가 0.5 이상 벌어졌습니다. 피펫팅 오차나 outlier 웰일 수 있습니다.<br>
+        <span style="font-family:'Spline Sans Mono',monospace;font-size:12px;opacity:.85">${combos.slice(0,6).map(esc).join(' / ')}${combos.length>6?' …':''}</span>
+      </div></div>`;
+  }
+  if(!L.length && !H.length && EXCLUDED.size){
+    h+=`<div class="alert calm"><div class="ico">✓</div>
+      <div class="txt"><b>${EXCLUDED.size}개 웰을 제외하고 계산했습니다</b>
+        남은 웰에는 경고가 없습니다. 제외한 웰은 논문에 쓸 때 반드시 기록하세요.</div></div>`;
+  }
+  box.innerHTML=h;
+  const b=document.getElementById('a-late');
+  if(b) b.onclick=()=>{ flags().late.forEach(k=>EXCLUDED.add(k)); render(); };
+}
 
 function renderChips(){
   const cal=document.getElementById('cal').value;
@@ -691,7 +1003,7 @@ function renderGenes(){
 
 function trace(g,cal,ref){
   let h=`<table class="tracetbl"><thead><tr>
-    <th>Group</th><th>rep</th><th>Ct ${esc(g.target)}</th><th>Ct ${esc(ref)}</th>
+    <th>Group</th><th>rep</th><th>Ct ${esc(g.target)}</th><th>${g.blocks.find(b=>b.n&&b.reps[0].refIsMean)?'평균 Ct '+esc(ref):'Ct '+esc(ref)}</th>
     <th>∆Cp</th><th>∆∆Cp</th><th>2^(−∆∆Cp)</th><th>Normalized</th></tr></thead><tbody>`;
   g.blocks.forEach((b,bi)=>{
     if(!b.n){ h+=`<tr class="${bi?'gsep':''}"><td class="gname">${esc(b.group)}</td>
@@ -705,9 +1017,15 @@ function trace(g,cal,ref){
         <td>${r.pow.toFixed(4)}</td><td>${r.norm.toFixed(4)}</td></tr>`;
     });
   });
+  const md=document.getElementById('pairmode').value;
+  const step1 = md==='nopair'
+    ? `① ∆Cp = Ct<sub>${esc(g.target)}</sub> − <b>${esc(ref)}의 평균</b> (짝짓지 않음)`
+    : md==='sorted'
+      ? `① ∆Cp = Ct<sub>${esc(g.target)}</sub> − Ct<sub>${esc(ref)}</sub> (그룹 내에서 각각 <b>오름차순 정렬</b> 후 같은 순위끼리)`
+      : `① ∆Cp = Ct<sub>${esc(g.target)}</sub> − Ct<sub>${esc(ref)}</sub> (<b>well 순서</b>대로 같은 행끼리)`;
   h+=`</tbody></table>
   <div class="hint" style="margin-top:11px;line-height:1.8">
-    ① ∆Cp = Ct<sub>${esc(g.target)}</sub> − Ct<sub>${esc(ref)}</sub> (같은 행끼리)<br>
+    ${step1}<br>
     ② ∆∆Cp = ∆Cp − <b>${g.calDcp.toFixed(4)}</b> &nbsp;(= ${esc(cal)}의 ∆Cp 평균)<br>
     ③ Normalized = 2^(−∆∆Cp) ÷ <b>${g.calPow.toFixed(4)}</b> &nbsp;(= ${esc(cal)}의 2^(−∆∆Cp) 평균) → ${esc(cal)}이 정확히 1</div>`;
   return h;
@@ -728,11 +1046,11 @@ function chart(g,cal){
   const {top,step}=niceTicks(hi*1.14);
   const y=v=>T+ph-(v/top)*ph;
   const gap=pw/bs.length, bw=Math.min(62,gap*0.56);
-  let s=`<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" font-family="IBM Plex Sans, sans-serif"><rect width="${W}" height="${H}" fill="#fff"/>`;
+  let s=`<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" font-family="Pretendard, Pretendard Variable, sans-serif"><rect width="${W}" height="${H}" fill="#fff"/>`;
   for(let v=0;v<=top+1e-9;v+=step){
     const yy=y(v);
     s+=`<line x1="${L}" y1="${yy}" x2="${L+pw}" y2="${yy}" stroke="${v===0?'#161D24':'#EFF2F0'}" stroke-width="${v===0?1.2:1}"/>
-    <text x="${L-10}" y="${yy+4}" text-anchor="end" font-size="11" font-family="IBM Plex Mono, monospace" fill="#5B6770">${+v.toFixed(4)}</text>`;
+    <text x="${L-10}" y="${yy+4}" text-anchor="end" font-size="11" font-family="Spline Sans Mono, monospace" fill="#5B6770">${+v.toFixed(4)}</text>`;
   }
   s+=`<line x1="${L}" y1="${T}" x2="${L}" y2="${T+ph}" stroke="#161D24" stroke-width="1.2"/>
   <text transform="translate(20,${T+ph/2}) rotate(-90)" text-anchor="middle" font-size="12.5" font-weight="600" fill="#161D24">Relative mRNA level</text>`;
