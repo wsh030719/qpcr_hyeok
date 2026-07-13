@@ -53,6 +53,9 @@
     .gene-head h3{font-size:19px}
     table.data{font-size:12px}
     .alert{padding:13px 14px;gap:10px}
+    .eyebrow{font-size:12.5px;letter-spacing:.08em}
+    .refwrap{gap:16px}
+    .legbox{padding:14px;font-size:13px}
   }
 
   .drop{margin-top:30px;background:var(--surface);border:1.5px dashed var(--rule);border-radius:12px;
@@ -94,9 +97,9 @@
   @media(max-width:640px){ .instr td:first-child{white-space:normal} }
 
   section{margin-top:38px}
-  .eyebrow{font-family:'Pretendard Variable',Pretendard,sans-serif;font-size:11.5px;font-weight:700;
-    letter-spacing:.14em;text-transform:uppercase;color:var(--ink-3);
-    display:flex;align-items:center;gap:12px;margin-bottom:15px}
+  .eyebrow{font-family:'Pretendard Variable',Pretendard,sans-serif;font-size:13.5px;font-weight:700;
+    letter-spacing:.1em;text-transform:uppercase;color:var(--ink-2);
+    display:flex;align-items:center;gap:13px;margin-bottom:16px}
   .eyebrow::after{content:"";flex:1;height:1px;background:var(--rule)}
   .panel{background:var(--surface);border:1px solid var(--rule);border-radius:12px;padding:22px;box-shadow:var(--shadow)}
 
@@ -167,10 +170,10 @@
   .chip.drag{opacity:.35}
   .chip .idx{font-family:'Spline Sans Mono',monospace;font-size:10.5px;color:var(--ink-3)}
   .chip.cal{border-color:var(--fam);background:var(--fam-wash);color:var(--fam-deep);font-weight:600}
-  .hint{font-size:12px;color:var(--ink-3);margin-top:9px}
+  .hint{font-size:12.5px;line-height:1.65;color:var(--ink-3);margin-top:9px}
 
   details.map{margin-top:18px;border-top:1px solid var(--rule);padding-top:15px}
-  details.map summary{font-size:12.5px;color:var(--fam-deep);cursor:pointer;font-weight:600;list-style:none;
+  details.map summary{font-size:13px;color:var(--fam-deep);cursor:pointer;font-weight:600;list-style:none;
     display:flex;align-items:center;gap:6px}
   details.map summary::-webkit-details-marker{display:none}
   details.map summary::before{content:"▸";transition:transform .15s;display:inline-block}
@@ -179,7 +182,7 @@
   .mapgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(158px,1fr));gap:14px 16px;align-items:end}
 
   .plate-head{display:flex;justify-content:space-between;align-items:baseline;gap:16px;flex-wrap:wrap;margin-bottom:6px}
-  .legend{display:flex;gap:16px;flex-wrap:wrap;font-size:12px;color:var(--ink-2)}
+  .legend{display:flex;gap:16px;flex-wrap:wrap;font-size:12.5px;color:var(--ink-2)}
   .legend span{display:flex;align-items:center;gap:6px}
   .dot{width:9px;height:9px;border-radius:50%;display:inline-block}
   .plate-scroll{overflow-x:auto;padding:8px 2px 4px;margin:0 -4px;-webkit-overflow-scrolling:touch}
@@ -221,8 +224,8 @@
   .gene-head .meta{font-size:12px;color:var(--ink-3);font-family:'Spline Sans Mono',monospace}
   .gene-body{display:grid;grid-template-columns:minmax(0,1.02fr) minmax(0,1fr);gap:26px;align-items:start}
   @media(max-width:920px){.gene-body{grid-template-columns:1fr}}
-  table.data{width:100%;border-collapse:collapse;font-size:13px}
-  table.data th{font-family:'Spline Sans Mono',monospace;font-size:10.5px;font-weight:600;letter-spacing:.05em;
+  table.data{width:100%;border-collapse:collapse;font-size:13.5px}
+  table.data th{font-family:'Spline Sans Mono',monospace;font-size:11px;font-weight:600;letter-spacing:.05em;
     text-transform:uppercase;color:var(--ink-3);text-align:right;padding:0 9px 9px;
     border-bottom:1.5px solid var(--ink-3)}
   table.data th:first-child{text-align:left;padding-left:8px}
@@ -249,11 +252,11 @@
   .anova b{color:var(--ink);font-family:'Spline Sans Mono',monospace;font-weight:600}
 
   details.trace{margin-top:16px;border-top:1px solid var(--rule);padding-top:13px}
-  details.trace summary{font-size:12.5px;color:var(--fam-deep);cursor:pointer;font-weight:600;list-style:none;display:flex;gap:6px;align-items:center}
+  details.trace summary{font-size:13px;color:var(--fam-deep);cursor:pointer;font-weight:600;list-style:none;display:flex;gap:6px;align-items:center}
   details.trace summary::-webkit-details-marker{display:none}
   details.trace summary::before{content:"▸";transition:transform .15s;display:inline-block}
   details.trace[open] summary::before{transform:rotate(90deg)}
-  .tracetbl{width:100%;border-collapse:collapse;font-size:12px;margin-top:12px}
+  .tracetbl{width:100%;border-collapse:collapse;font-size:12.5px;margin-top:12px}
   .tracetbl th{font-family:'Spline Sans Mono',monospace;font-size:10px;font-weight:600;letter-spacing:.04em;
     text-transform:uppercase;color:var(--ink-3);text-align:right;padding:0 8px 8px;
     border-bottom:1.5px solid var(--ink-3);white-space:nowrap}
@@ -275,6 +278,38 @@
   .export{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
   .export .note{font-size:12.5px;color:var(--ink-3)}
   .hidden{display:none}
+
+  /* --- Reference 안정성 --- */
+  .refwrap{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,320px);gap:24px;align-items:start}
+  @media(max-width:900px){.refwrap{grid-template-columns:1fr}}
+  table.ref{width:100%;border-collapse:collapse;font-size:13.5px}
+  table.ref th{font-family:'Spline Sans Mono',monospace;font-size:11px;font-weight:600;letter-spacing:.05em;
+    text-transform:uppercase;color:var(--ink-3);text-align:right;padding:0 9px 9px;
+    border-bottom:1.5px solid var(--ink-3);white-space:nowrap}
+  table.ref th:first-child{text-align:left;padding-left:8px}
+  table.ref th+th{border-left:1px solid var(--rule)}
+  table.ref td{padding:8px 9px;border-bottom:1px solid #EFF2F0;text-align:right;
+    font-family:'Spline Sans Mono',monospace;font-variant-numeric:tabular-nums}
+  table.ref td+td{border-left:1px solid #F1F4F2}
+  table.ref td:first-child{text-align:left;padding-left:8px;
+    font-family:'Pretendard Variable',Pretendard,sans-serif;font-weight:600}
+  table.ref tbody tr:hover td{background:#FAFBFA}
+  .dev{display:inline-flex;align-items:center;gap:7px;justify-content:flex-end;width:100%}
+  .devbar{width:54px;height:7px;border-radius:4px;background:#EDF0EE;position:relative;overflow:hidden;flex:0 0 auto}
+  .devbar i{position:absolute;top:0;bottom:0;left:50%;border-radius:4px}
+  .verdict{padding:13px 15px;border-radius:10px;border:1.5px solid;font-size:13.5px;line-height:1.6}
+  .verdict .v{display:block;margin-bottom:5px}
+  .verdict .why{font-size:12.5px;line-height:1.65;opacity:.92;margin-top:8px;
+    padding-top:8px;border-top:1px solid rgba(0,0,0,.08)}
+  .verdict.ok{background:var(--fam-wash);border-color:#A8D3D6;color:#0A5158}
+  .verdict.warn{background:var(--vic-wash);border-color:#EDCE94;color:#7A5310}
+  .verdict.bad{background:var(--rox-wash);border-color:#F0B4AF;color:#8E2620}
+
+  /* --- 그림 설명 --- */
+  .legbox{position:relative;background:var(--paper);border:1px solid var(--rule);border-radius:10px;
+    padding:16px 18px;font-size:13.5px;line-height:1.8;color:var(--ink);
+    font-family:'Pretendard Variable',Pretendard,sans-serif}
+  .legbar{display:flex;gap:9px;align-items:center;margin-top:13px}
   .lang{display:inline-flex;border:1px solid var(--rule);border-radius:8px;overflow:hidden;background:var(--surface)}
   .lang button{border:none;border-radius:0;padding:5px 11px;font-size:12px;font-weight:600;
     color:var(--ink-3);background:transparent;letter-spacing:.03em}
@@ -284,8 +319,8 @@
   .headright{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
 
   /* --- 방식 비교 --- */
-  .cmp{width:100%;border-collapse:collapse;font-size:13px}
-  .cmp th{font-family:'Pretendard Variable',Pretendard,sans-serif;font-size:10.5px;font-weight:700;letter-spacing:.09em;
+  .cmp{width:100%;border-collapse:collapse;font-size:13.5px}
+  .cmp th{font-family:'Pretendard Variable',Pretendard,sans-serif;font-size:11px;font-weight:700;letter-spacing:.09em;
     text-transform:uppercase;color:var(--ink-3);text-align:right;padding:0 10px 9px;
     border-bottom:1.5px solid var(--ink-3);white-space:nowrap}
   .cmp th:first-child,.cmp th:nth-child(2){text-align:left}
@@ -324,7 +359,8 @@
   .alert.calm .ico{background:var(--fam)}
   .alert.calm b{color:var(--fam-deep)}
   .alert .act{margin-left:auto;flex:0 0 auto}
-  footer{margin-top:56px;padding-top:22px;border-top:1px solid var(--rule);font-size:12.5px;color:var(--ink-3);line-height:1.75}
+  footer{margin-top:56px;padding-top:24px;border-top:1px solid var(--rule);font-size:13px;color:var(--ink-3);line-height:1.85}
+  footer p{margin-bottom:9px}
   footer code{font-family:'Spline Sans Mono',monospace;background:var(--paper);padding:1px 5px;border-radius:4px;color:var(--ink-2)}
   footer b{color:var(--ink-2)}
 </style>
@@ -430,6 +466,11 @@
                 <option value="well" data-i="mWell"></option>
                 <option value="nopair" data-i="mNopair"></option>
               </select></div>
+            <div class="field"><label for="errmode" data-i="lbErr"></label>
+              <select id="errmode">
+                <option value="sd" data-i="errSD"></option>
+                <option value="sem" data-i="errSEM"></option>
+              </select></div>
           </div>
 
           <div class="chipwrap">
@@ -478,6 +519,17 @@
     </section>
 
     <section>
+      <div class="eyebrow" data-i="eyeRef"></div>
+      <div class="panel">
+        <p style="font-size:13.5px;line-height:1.7;margin-bottom:18px" data-i="refIntro"></p>
+        <div class="refwrap">
+          <div style="overflow-x:auto"><table class="ref" id="reftbl"></table></div>
+          <div id="refverdict"></div>
+        </div>
+      </div>
+    </section>
+
+    <section>
       <div class="eyebrow" data-i="eyeRes"></div>
       <div id="alerts"></div>
       <div class="alert caution">
@@ -497,6 +549,17 @@
     </section>
 
     <section>
+      <div class="eyebrow" data-i="eyeLeg"></div>
+      <div class="panel">
+        <p style="font-size:13.5px;line-height:1.7;margin-bottom:14px" data-i="legIntro"></p>
+        <div class="legbox" id="legbox"></div>
+        <div class="legbar">
+          <button class="solid" id="leg-copy" data-i="legCopy"></button>
+        </div>
+      </div>
+    </section>
+
+    <section>
       <div class="eyebrow" data-i="eyeExp"></div>
       <div class="panel export">
         <button class="solid" id="dl-xlsx" data-i="expXlsx"></button>
@@ -506,9 +569,10 @@
     </section>
 
     <footer>
-      <b data-i="ftCalcT"></b> <span data-i="ftCalc"></span><br>
-      <b data-i="ftStatT"></b> <span data-i="ftStat"></span><br>
-      <b data-i="ftWarnT"></b> <span data-i="ftWarn"></span>
+      <p><b data-i="ftCalcT"></b> <span data-i="ftCalc"></span></p>
+      <p><b data-i="ftStatT"></b> <span data-i="ftStat"></span></p>
+      <p><b data-i="ftEffT"></b> <span data-i="ftEff"></span></p>
+      <p><b data-i="ftWarnT"></b> <span data-i="ftWarn"></span></p>
     </footer>
   </div>
 </div>
@@ -523,7 +587,7 @@ const CT_LATE=35, SD_HIGH=0.5;
 const F=(x,d=4)=>(x==null||!isFinite(x))?'—':x.toFixed(d);
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 
-const DEMO=[["A1","CON","GAPDH",15.8979],["A2","CON","GAPDH",15.5161],["A3","CON","GAPDH",15.7701],["A4","Cis 25uM","GAPDH",15.7283],["A5","Cis 25uM","GAPDH",15.4534],["A6","Cis 25uM","GAPDH",15.8493],["A7","Cis 25uM 2","GAPDH",14.7344],["A8","Cis 25uM 2","GAPDH",14.9834],["A9","Cis 25uM 2","GAPDH",15.1665],["A10","ul 10ug/ml","GAPDH",15.0873],["A11","ul 10ug/ml","GAPDH",15.2916],["A12","ul 10ug/ml","GAPDH",15.1541],["B1","CON","MuRF1",21.7651],["B2","CON","MuRF1",22.0916],["B3","CON","MuRF1",21.9247],["B4","Cis 25uM","MuRF1",21.462],["B5","Cis 25uM","MuRF1",21.5372],["B6","Cis 25uM","MuRF1",21.5219],["B7","Cis 25uM 2","MuRF1",20.9268],["B8","Cis 25uM 2","MuRF1",21.1521],["B9","Cis 25uM 2","MuRF1",21.4241],["B10","ul 10ug/ml","MuRF1",21.2265],["B11","ul 10ug/ml","MuRF1",21.3947],["B12","ul 10ug/ml","MuRF1",21.3164],["C1","CON","Atrogin1",23.8942],["C2","CON","Atrogin1",23.6153],["C3","CON","Atrogin1",23.4534],["C4","Cis 25uM","Atrogin1",23.7841],["C5","Cis 25uM","Atrogin1",24.1234],["C6","Cis 25uM","Atrogin1",23.9012],["C7","Cis 25uM 2","Atrogin1",23.1876],["C8","Cis 25uM 2","Atrogin1",23.4521],["C9","Cis 25uM 2","Atrogin1",23.6109],["C10","ul 10ug/ml","Atrogin1",23.8734],["C11","ul 10ug/ml","Atrogin1",23.9521],["C12","ul 10ug/ml","Atrogin1",24.0187],["D1","CON","ERFE",24.6123],["D2","CON","ERFE",24.4517],["D3","CON","ERFE",24.7902],["D4","Cis 25uM","ERFE",35.4231],["D5","Cis 25uM","ERFE",36.1204],["D6","Cis 25uM","ERFE",36.7318],["D7","Cis 25uM 2","ERFE",24.3187],["D8","Cis 25uM 2","ERFE",24.6032],["D9","Cis 25uM 2","ERFE",30.7145],["D10","ul 10ug/ml","ERFE",25.4218],["D11","ul 10ug/ml","ERFE",25.6033],["D12","ul 10ug/ml","ERFE",25.5127],["E1","CON","ID1",20.1234],["E2","CON","ID1",20.3417],["E3","CON","ID1",20.2108],["E4","Cis 25uM","ID1",19.9812],["E5","Cis 25uM","ID1",20.1523],["E6","Cis 25uM","ID1",20.0917],["E7","Cis 25uM 2","ID1",19.0321],["E8","Cis 25uM 2","ID1",19.3104],["E9","Cis 25uM 2","ID1",19.5218],["E10","ul 10ug/ml","ID1",19.3812],["E11","ul 10ug/ml","ID1",19.5027],["E12","ul 10ug/ml","ID1",19.4419]];
+const DEMO=[["A1","Control","GAPDH",15.3848],["A2","Control","GAPDH",15.4137],["A3","Control","GAPDH",15.7521],["A4","Vehicle","GAPDH",15.751],["A5","Vehicle","GAPDH",15.9846],["A6","Vehicle","GAPDH",15.8458],["A7","Drug 10uM","GAPDH",15.5736],["A8","Drug 10uM","GAPDH",15.7647],["A9","Drug 10uM","GAPDH",15.414],["A10","Drug 25uM","GAPDH",16.2267],["A11","Drug 25uM","GAPDH",15.8526],["A12","Drug 25uM","GAPDH",15.9717],["A13","Drug 50uM","GAPDH",16.3304],["A14","Drug 50uM","GAPDH",16.0933],["A15","Drug 50uM","GAPDH",16.0799],["B1","Control","TNF",22.0599],["B2","Control","TNF",22.0133],["B3","Control","TNF",22.5512],["B4","Vehicle","TNF",22.2691],["B5","Vehicle","TNF",22.4211],["B6","Vehicle","TNF",22.1327],["B7","Drug 10uM","TNF",21.867],["B8","Drug 10uM","TNF",21.7427],["B9","Drug 10uM","TNF",21.4067],["B10","Drug 25uM","TNF",21.0204],["B11","Drug 25uM","TNF",20.7438],["B12","Drug 25uM","TNF",21.0772],["B13","Drug 50uM","TNF",35.9061],["B14","Drug 50uM","TNF",36.557],["B15","Drug 50uM","TNF",35.737],["C1","Control","IL1B",24.1093],["C2","Control","IL1B",24.205],["C3","Control","IL1B",23.9252],["C4","Vehicle","IL1B",24.0206],["C5","Vehicle","IL1B",24.3168],["C6","Vehicle","IL1B",24.2171],["C7","Drug 10uM","IL1B",23.7338],["C8","Drug 10uM","IL1B",23.9587],["C9","Drug 10uM","IL1B",23.9771],["C10","Drug 25uM","IL1B",23.6816],["C11","Drug 25uM","IL1B",23.7817],["C12","Drug 25uM","IL1B",25.95],["C13","Drug 50uM","IL1B",23.1939],["C14","Drug 50uM","IL1B",23.4408],["C15","Drug 50uM","IL1B",23.0163],["D1","Control","MYOD1",21.7659],["D2","Control","MYOD1",21.818],["D3","Control","MYOD1",21.6157],["D4","Vehicle","MYOD1",21.7166],["D5","Vehicle","MYOD1",21.6457],["D6","Vehicle","MYOD1",21.931],["D7","Drug 10uM","MYOD1",22.4214],["D8","Drug 10uM","MYOD1",22.2064],["D9","Drug 10uM","MYOD1",22.4151],["D10","Drug 25uM","MYOD1",22.9597],["D11","Drug 25uM","MYOD1",22.6724],["D12","Drug 25uM","MYOD1",22.8979],["D13","Drug 50uM","MYOD1",23.0996],["D14","Drug 50uM","MYOD1",23.0598],["D15","Drug 50uM","MYOD1",23.291],["E1","Control","COL1A1",23.2376],["E2","Control","COL1A1",23.228],["E3","Control","COL1A1",23.1312],["E4","Vehicle","COL1A1",22.9018],["E5","Vehicle","COL1A1",23.1576],["E6","Vehicle","COL1A1",23.2406],["E7","Drug 10uM","COL1A1",23.3716],["E8","Drug 10uM","COL1A1",23.4424],["E9","Drug 10uM","COL1A1",23.2487],["E10","Drug 25uM","COL1A1",23.2709],["E11","Drug 25uM","COL1A1",23.4119],["E12","Drug 25uM","COL1A1",22.8229],["E13","Drug 50uM","COL1A1",23.2276],["E14","Drug 50uM","COL1A1",23.068],["E15","Drug 50uM","COL1A1",23.1505]];
 
 
 /* ============ i18n ============ */
@@ -624,11 +688,40 @@ ko:{
  errEmpty:'비어 있는 시트입니다. 다른 시트를 골라보세요.',
  errRows:'데이터 행을 읽지 못했습니다. 위의 <b>컬럼 매핑</b>에서 시트·헤더 행·컬럼을 확인하세요.',
  errRetry:'클릭해서 다시 시도',
- demoName:'예시 데이터',
+ demoName:'예시 데이터 (가상)',
  chartY:'Relative mRNA level', chartX:'Group',
  chartTitle:(t,r,c)=>`${t} — ΔΔCt`,
  xlNote:'검정은 ∆Cp 값으로 수행 (Welch t-test, Holm 보정)',
  xlSummary:'Summary', xlSig:'sig',
+ lbErr:'오차막대',
+ errSD:'SD — 표준편차', errSEM:'SEM — 표준오차',
+ sdShort:'SD', semShort:'SEM',
+
+ eyeRef:'Reference 안정성',
+ refIntro:'∆∆Ct는 <b>reference 유전자가 모든 실험군에서 일정하다</b>는 전제 위에 서 있습니다. 처리 때문에 reference 자체가 변했다면, 정규화가 결과를 바로잡는 게 아니라 오히려 왜곡합니다. 아래는 보정하지 않은 <b>원본 Ct</b>입니다.',
+ refC1:'Group', refC2:'평균 Ct', refC3:'SD', refC4:'전체 평균 대비', refC5:'n',
+ refOk:sp=>`군간 최대 편차 <b>${sp} Ct</b> — 안정적입니다. 정규화 전제가 성립합니다.`,
+ refWarn:sp=>`군간 최대 편차 <b>${sp} Ct</b> — 경계선입니다. 해석에 유의하세요.`,
+ refBad:(sp,fold)=>`군간 최대 편차 <b>${sp} Ct</b> (약 ${fold}배) — reference가 군에 따라 변하고 있습니다.`,
+ refWhy:'reference 유전자가 처리에 반응하고 있거나, RNA 양·역전사 효율이 군마다 달랐을 수 있습니다. 다른 housekeeping 유전자를 쓰거나, 여러 개의 기하평균으로 정규화하는 방법을 검토하세요. 아래 결과는 이 전제 위에서만 유효합니다.',
+ alRefT:(g,sp)=>`Reference 유전자 ${g}가 군에 따라 ${sp} Ct 변합니다`,
+ alRefB:'∆∆Ct는 reference가 모든 군에서 일정하다는 가정에 의존합니다. 이 가정이 깨지면 정규화 자체가 결과를 왜곡할 수 있습니다. 위의 Reference 안정성 표를 확인하세요.',
+
+ eyeLeg:'그림 설명 · Methods',
+ legIntro:'지금 설정 그대로 문장으로 정리했습니다. 논문·발표 자료에 붙여 쓰고, 실제 실험 조건에 맞게 다듬으세요.',
+ legCopy:'복사', legCopied:'복사됨',
+ legText:o=>`상대 발현량은 2^(−∆∆Ct) 방법으로 산출하였다. Reference 유전자는 ${o.ref}, calibrator는 ${o.cal}이다. ${o.modeNote}. 막대는 평균 ± ${o.err}이며 (n = ${o.n}), 점은 개별 technical replicate를 나타낸다. ${o.cal} 대비 각 군의 유의성은 ∆Cp 값에 대한 Welch t-검정으로 평가하였고, 다중비교는 Holm 방법으로 보정하였다 (*p < 0.05, **p < 0.01, ***p < 0.001). 군간 전체 차이는 일원배치 분산분석으로 검정하였다.${o.excl}`,
+ legMode:{sorted:'∆Cp는 각 군 내에서 target과 reference의 Ct를 각각 오름차순 정렬한 뒤 같은 순위끼리 짝지어 계산하였다', well:'∆Cp는 well 순서에 따라 target과 reference의 Ct를 짝지어 계산하였다', nopair:'∆Cp는 각 target replicate의 Ct에서 해당 군 reference Ct의 평균을 빼어 계산하였다'},
+ legExcl:(n,list)=>` ${n}개 웰(${list})은 증폭 실패 또는 과도한 replicate 산포로 분석에서 제외하였다.`,
+
+ ftEffT:'가정.',
+ ftEff:'2<sup>−∆∆Ct</sup>는 target과 reference의 <b>증폭 효율이 같고 100%에 가깝다</b>고 가정합니다. 표준곡선으로 효율을 측정했는데 두 유전자가 크게 다르다면 Pfaffl 보정을 고려하세요. 또한 reference 유전자가 모든 군에서 일정해야 합니다 — Reference 안정성 표를 반드시 확인하세요.',
+
+ xlQC:'QC', xlSettings:'설정', xlWell:'Well', xlStatus:'상태', xlFlag:'플래그',
+ xlIncluded:'포함', xlExcluded:'제외',
+ xlFlagLate:'Ct>35 / 미검출', xlFlagHigh:'rep 산포 큼', xlFlagNone:'—',
+ xlRefStab:'Reference 안정성', xlSpread:'군간 최대 편차 (Ct)',
+
 },
 en:{
  title:'ΔΔCt — qPCR analyzer',
@@ -726,11 +819,40 @@ en:{
  errEmpty:'This sheet is empty. Try another sheet.',
  errRows:'No data rows found. Check the sheet, header row, and columns under <b>Column mapping</b> above.',
  errRetry:'Click to try again',
- demoName:'Example data',
+ demoName:'Example data (synthetic)',
  chartY:'Relative mRNA level', chartX:'Group',
  chartTitle:(t,r,c)=>`${t} — ΔΔCt`,
  xlNote:'Tests performed on ∆Cp values (Welch t-test, Holm correction)',
  xlSummary:'Summary', xlSig:'sig',
+ lbErr:'Error bars',
+ errSD:'SD — standard deviation', errSEM:'SEM — standard error',
+ sdShort:'SD', semShort:'SEM',
+
+ eyeRef:'Reference stability',
+ refIntro:'∆∆Ct rests on the assumption that <b>the reference gene is constant across all groups</b>. If the treatment moved the reference itself, normalizing to it distorts the result rather than correcting it. Below are the <b>raw Ct values</b>, uncorrected.',
+ refC1:'Group', refC2:'Mean Ct', refC3:'SD', refC4:'vs overall mean', refC5:'n',
+ refOk:sp=>`Largest spread between groups: <b>${sp} Ct</b> — stable. The normalization assumption holds.`,
+ refWarn:sp=>`Largest spread between groups: <b>${sp} Ct</b> — borderline. Interpret with care.`,
+ refBad:(sp,fold)=>`Largest spread between groups: <b>${sp} Ct</b> (~${fold}-fold) — the reference is shifting between groups.`,
+ refWhy:'The reference gene may be responding to the treatment, or RNA input and reverse-transcription efficiency may have differed between groups. Consider a different housekeeping gene, or normalizing to the geometric mean of several. The results below are only valid under this assumption.',
+ alRefT:(g,sp)=>`Reference gene ${g} shifts by ${sp} Ct between groups`,
+ alRefB:'∆∆Ct depends on the reference being constant across groups. When that breaks, normalization itself can distort the result. Check the Reference stability table above.',
+
+ eyeLeg:'Figure legend · Methods',
+ legIntro:'Written out from your current settings. Paste it into a paper or a slide and adapt it to your actual experimental conditions.',
+ legCopy:'Copy', legCopied:'Copied',
+ legText:o=>`Relative mRNA expression was quantified using the 2^(−∆∆Ct) method, with ${o.ref} as the reference gene and ${o.cal} as the calibrator. ${o.modeNote}. Bars represent the mean ± ${o.err} (n = ${o.n}), and dots indicate individual technical replicates. Differences from ${o.cal} were assessed by Welch’s t-test on ∆Cp values, with Holm correction for multiple comparisons (*p < 0.05, **p < 0.01, ***p < 0.001). Overall differences among groups were tested by one-way ANOVA.${o.excl}`,
+ legMode:{sorted:'∆Cp was calculated by sorting the target and reference Ct values within each group in ascending order and pairing them by rank', well:'∆Cp was calculated by pairing target and reference Ct values in well order', nopair:'∆Cp was calculated by subtracting the mean reference Ct of each group from every target replicate'},
+ legExcl:(n,list)=>` ${n} well${n>1?'s':''} (${list}) ${n>1?'were':'was'} excluded owing to amplification failure or excessive replicate spread.`,
+
+ ftEffT:'Assumptions.',
+ ftEff:'2<sup>−∆∆Ct</sup> assumes the target and reference <b>amplify with equal, near-100% efficiency</b>. If you measured efficiencies from standard curves and they differ substantially, consider the Pfaffl correction. It also assumes the reference gene is constant across groups — always check the Reference stability table.',
+
+ xlQC:'QC', xlSettings:'Settings', xlWell:'Well', xlStatus:'Status', xlFlag:'Flag',
+ xlIncluded:'included', xlExcluded:'excluded',
+ xlFlagLate:'Ct>35 / undetermined', xlFlagHigh:'high replicate spread', xlFlagNone:'—',
+ xlRefStab:'Reference stability', xlSpread:'Largest spread between groups (Ct)',
+
 }
 };
 let LANG = (navigator.language||'en').toLowerCase().startsWith('ko') ? 'ko' : 'en';
@@ -844,7 +966,7 @@ document.querySelectorAll('.lang button').forEach(b=>{ b.onclick=()=>setLang(b.d
 applyLang();
 
 function enhanceAll(){
-  ['ref','cal','pairmode','m-sheet','m-hdr','m-smp','m-tgt','m-ct','m-well']
+  ['ref','cal','pairmode','errmode','m-sheet','m-hdr','m-smp','m-tgt','m-ct','m-well']
     .forEach(id=>{ const el=document.getElementById(id); if(el) enhance(el); });
 }
 
@@ -1127,7 +1249,7 @@ function ingest(){
   calSel.innerHTML=samples.map(s=>`<option>${esc(s)}</option>`).join('');
   const c=samples.find(s=>/^(con|ctl|ctrl|control|nc|veh|vehicle|untreated|mock|wt)/i.test(s.trim()));
   calSel.value=c||samples[0];
-  refSel.onchange=calSel.onchange=document.getElementById('pairmode').onchange=render;
+  refSel.onchange=calSel.onchange=document.getElementById('pairmode').onchange=document.getElementById('errmode').onchange=render;
 
   enhanceAll();
   document.getElementById('fname').textContent=FNAME||'—';
@@ -1138,6 +1260,8 @@ function ingest(){
 
 /* ============ 계산 ============ */
 const activeCts=(s,t)=>RAW.filter(r=>r.sample===s&&r.target===t&&!EXCLUDED.has(r.key)&&!r.undet);
+const errMode=()=>{const e=document.getElementById('errmode'); return e?e.value:'sd';};
+const errName=()=>T(errMode()==='sem'?'semShort':'sdShort');
 function flags(){
   const late=new Set(), high=new Set(), seen=new Set();
   RAW.forEach(r=>{ if(r.undet||(isFinite(r.ct)&&r.ct>CT_LATE)) late.add(r.key); });
@@ -1183,6 +1307,8 @@ function compute(mode){
       b.reps.forEach(r=>{ r.norm=r.pow/calPow; });
       const N=b.reps.map(r=>r.norm), D=b.reps.map(r=>r.dcp);
       b.mean=b.n?mean(N):NaN; b.sd=sd(N);
+      b.sem=(b.n>1&&isFinite(b.sd))?b.sd/Math.sqrt(b.n):NaN;
+      b.err=(errMode()==='sem')?b.sem:b.sd;
       b.dcpMean=b.n?mean(D):NaN; b.dcpSd=sd(D); b.dcp=D;
     });
     // 통계: ∆Cp 기준
@@ -1198,7 +1324,82 @@ function compute(mode){
 }
 
 /* ============ 렌더 ============ */
-function render(){ renderChips(); renderPlate(); renderGenes(); renderAlerts(); renderCompare(); }
+function render(){ renderChips(); renderPlate(); renderRef(); renderGenes(); renderAlerts(); renderCompare(); renderLegend(); }
+
+/** reference 유전자가 군에 따라 흔들리는지 */
+function refStats(){
+  const ref=document.getElementById('ref').value;
+  const groups=ORDER.filter(g=>RAW.some(r=>r.sample===g));
+  const rows=[];
+  groups.forEach(g=>{
+    const cts=activeCts(g,ref).map(x=>x.ct);
+    if(!cts.length) return;
+    rows.push({group:g, n:cts.length, mean:mean(cts), sd:sd(cts)});
+  });
+  if(rows.length<2) return {ref, rows, spread:NaN, overall:NaN, level:'ok'};
+  const ms=rows.map(r=>r.mean);
+  const overall=mean(ms);
+  const spread=Math.max(...ms)-Math.min(...ms);
+  rows.forEach(r=>r.dev=r.mean-overall);
+  const level = spread>1 ? 'bad' : spread>0.5 ? 'warn' : 'ok';
+  return {ref, rows, spread, overall, level};
+}
+function renderRef(){
+  const R=refStats();
+  const tbl=document.getElementById('reftbl'), vb=document.getElementById('refverdict');
+  if(!R.rows.length){ tbl.innerHTML=''; vb.innerHTML=''; return; }
+  const maxAbs=Math.max(0.001,...R.rows.map(r=>Math.abs(r.dev||0)));
+  tbl.innerHTML=`<thead><tr><th>${T('refC1')}</th><th>${T('refC2')}</th><th>${T('refC3')}</th>
+    <th>${T('refC4')}</th><th>${T('refC5')}</th></tr></thead><tbody>`+
+    R.rows.map(r=>{
+      const d=r.dev||0, w=Math.abs(d)/maxAbs*50;
+      const col = Math.abs(d)>0.5 ? 'var(--rox)' : Math.abs(d)>0.25 ? 'var(--vic)' : 'var(--fam)';
+      const bar = d>=0
+        ? `<i style="left:50%;width:${w}%;background:${col}"></i>`
+        : `<i style="left:${50-w}%;width:${w}%;background:${col}"></i>`;
+      return `<tr><td>${esc(r.group)}</td><td>${F(r.mean,3)}</td>
+        <td class="sd">${r.n>1?F(r.sd,3):'—'}</td>
+        <td><span class="dev">${d>0?'+':''}${F(d,3)}<span class="devbar">${bar}</span></span></td>
+        <td class="n">${r.n}</td></tr>`;
+    }).join('')+'</tbody>';
+  const sp=F(R.spread,3), fold=F(Math.pow(2,R.spread),1);
+  const msg = R.level==='bad' ? T('refBad',sp,fold) : R.level==='warn' ? T('refWarn',sp) : T('refOk',sp);
+  vb.innerHTML=`<div class="verdict ${R.level}">
+    <span class="v">${msg}</span>
+    ${R.level==='ok'?'':`<div class="why">${T('refWhy')}</div>`}</div>`;
+}
+
+/** 그림 설명 / Methods 문장 생성 */
+function renderLegend(){
+  const {res,ref,cal}=compute();
+  const box=document.getElementById('legbox');
+  if(!res.some(g=>g.ok)){ box.textContent='—'; return; }
+  const ns=[...new Set(res.filter(g=>g.ok).flatMap(g=>g.blocks.filter(b=>b.n).map(b=>b.n)))].sort();
+  const nTxt = ns.length===1 ? String(ns[0]) : `${ns[0]}–${ns[ns.length-1]}`;
+  const off=[...EXCLUDED].map(k=>RAW.find(r=>r.key===k)).filter(Boolean);
+  const names=off.map(r=>r.well||`${r.sample}·${r.target}`);
+  const list = names.length>10 ? names.slice(0,10).join(', ')+' …' : names.join(', ');
+  const excl = off.length ? T('legExcl', off.length, list) : '';
+  box.textContent = T('legText', {
+    ref, cal, n:nTxt, err:errName(),
+    modeNote: T('legMode')[document.getElementById('pairmode').value],
+    excl
+  });
+  const btn=document.getElementById('leg-copy');
+  btn.onclick=async()=>{
+    const txt=box.textContent;
+    try{ await navigator.clipboard.writeText(txt); }
+    catch(e){
+      const ta=document.createElement('textarea');
+      ta.value=txt; ta.style.position='fixed'; ta.style.opacity='0';
+      document.body.appendChild(ta); ta.select();
+      try{ document.execCommand('copy'); }catch(_){}
+      ta.remove();
+    }
+    btn.textContent=T('legCopied');
+    setTimeout(()=>{ btn.textContent=T('legCopy'); },1600);
+  };
+}
 
 const MODES=()=>[['sorted',T('cmpM1')],['well',T('cmpM2')],['nopair',T('cmpM3')]];
 function renderCompare(){
@@ -1245,6 +1446,12 @@ function renderAlerts(){
   const L=[...late].filter(k=>!EXCLUDED.has(k)).map(k=>RAW.find(r=>r.key===k));
   const H=[...high].filter(k=>!EXCLUDED.has(k)&&!late.has(k)).map(k=>RAW.find(r=>r.key===k));
   let h='';
+  const R=refStats();
+  if(R.level==='bad'){
+    h+=`<div class="alert danger">
+      <div class="ico">!</div>
+      <div class="txt"><b>${T('alRefT', esc(R.ref), F(R.spread,2))}</b>${T('alRefB')}</div></div>`;
+  }
   if(L.length){
     const combos=[...new Set(L.map(r=>r.sample+' · '+r.target))];
     h+=`<div class="alert danger">
@@ -1357,7 +1564,7 @@ function renderGenes(){
         <td>${esc(b.group)}</td>
         <td>${F(b.dcpMean,2)}</td>
         <td>${b.n?F(b.mean,4):'—'}</td>
-        <td class="sd">${b.n>1?'± '+F(b.sd,4):'—'}</td>
+        <td class="sd">${b.n>1?'± '+F(b.err,4):'—'}</td>
         <td>${isCal?'<span class="ns">—</span>':pTxt(b.padj)}</td>
         <td>${sg}</td>
         <td class="n">${b.n}</td></tr>`;
@@ -1379,7 +1586,7 @@ function renderGenes(){
           <div class="anova">${anovaTxt}</div>
         </div>
         <table class="data">
-          <thead><tr><th>${T('thGroup')}</th><th>∆Cp</th><th>${T('thNorm')}</th><th>${T('thSD')}</th><th>${T('thP')}</th><th></th><th>${T('thN')}</th></tr></thead>
+          <thead><tr><th>${T('thGroup')}</th><th>∆Cp</th><th>${T('thNorm')}</th><th>${errName()}</th><th>${T('thP')}</th><th></th><th>${T('thN')}</th></tr></thead>
           <tbody>${rows}</tbody>
         </table>
       </div>
@@ -1435,7 +1642,7 @@ function chart(g,cal){
   const W=560,H=350,L=68,R=18,MT=30,B=76, pw=W-L-R, ph=H-MT-B;
   const bs=g.blocks.filter(b=>b.n>0);
   if(!bs.length) return `<svg viewBox="0 0 ${W} ${H}"></svg>`;
-  const hi=Math.max(...bs.map(b=>Math.max(b.mean+(b.sd||0),...b.reps.map(r=>r.norm))));
+  const hi=Math.max(...bs.map(b=>Math.max(b.mean+(b.err||0),...b.reps.map(r=>r.norm))));
   const {top,step}=niceTicks(hi*1.14);
   const y=v=>MT+ph-(v/top)*ph;
   const gap=pw/bs.length, bw=Math.min(62,gap*0.56);
@@ -1453,8 +1660,8 @@ function chart(g,cal){
     s+=`<rect x="${x0}" y="${y(b.mean)}" width="${bw}" height="${Math.max(0,MT+ph-y(b.mean))}" rx="2"
       fill="${isCal?'#E4F2F3':'#0E8C99'}" stroke="${isCal?'#0E8C99':'#0A6B75'}" stroke-width="1"/>`;
     let topY=y(b.mean);
-    if(isFinite(b.sd)&&b.sd>0){
-      const t=y(b.mean+b.sd), bo=y(Math.max(0,b.mean-b.sd)), cw=bw*0.3;
+    if(isFinite(b.err)&&b.err>0){
+      const t=y(b.mean+b.err), bo=y(Math.max(0,b.mean-b.err)), cw=bw*0.3;
       topY=t;
       s+=`<line x1="${cx}" y1="${t}" x2="${cx}" y2="${bo}" stroke="#161D24" stroke-width="1.1"/>
       <line x1="${cx-cw}" y1="${t}" x2="${cx+cw}" y2="${t}" stroke="#161D24" stroke-width="1.1"/>
@@ -1548,13 +1755,42 @@ function xlsx(res,ref,cal){
     ws['!cols']=[{wch:3},{wch:16},{wch:14},{wch:13},{wch:11},{wch:11},{wch:13},{wch:13}];
     XLSX.utils.book_append_sheet(wb,ws,String(g.target).slice(0,31));
   });
+  // ---- QC 감사 시트: 설정 + 모든 웰의 포함/제외 이력 ----
+  const Q=[]; const put=(r,c,v)=>{Q[r]=Q[r]||[];Q[r][c]=v;};
+  const {late,high}=flags();
+  const R=refStats();
+  put(0,0,T('xlSettings'));
+  [['Reference',ref],['Calibrator',cal],
+   ['Replicate',T('legMode')[document.getElementById('pairmode').value]],
+   ['Error bars',errName()],
+   [T('xlRefStab')+' — '+T('xlSpread'), isFinite(R.spread)?+R.spread.toFixed(3):'—']
+  ].forEach((row,i)=>{ put(1+i,0,row[0]); put(1+i,1,row[1]); });
+
+  let r=8;
+  put(r,0,T('xlQC'));
+  [T('xlWell'),'Sample','Target','Ct',T('xlStatus'),T('xlFlag')].forEach((h,j)=>put(r+1,j,h));
+  RAW.forEach((w,i)=>{
+    const off=EXCLUDED.has(w.key);
+    const fl = w.undet||late.has(w.key) ? T('xlFlagLate')
+             : high.has(w.key) ? T('xlFlagHigh') : T('xlFlagNone');
+    put(r+2+i,0,w.well||'');
+    put(r+2+i,1,w.sample);
+    put(r+2+i,2,w.target);
+    put(r+2+i,3,w.undet?'N/D':+w.ct.toFixed(4));
+    put(r+2+i,4,off?T('xlExcluded'):T('xlIncluded'));
+    put(r+2+i,5,fl);
+  });
+  const qs=XLSX.utils.aoa_to_sheet(Q);
+  qs['!cols']=[{wch:9},{wch:16},{wch:14},{wch:11},{wch:10},{wch:22}];
+  XLSX.utils.book_append_sheet(wb,qs,T('xlQC'));
+
   XLSX.writeFile(wb,'ddCt_analysis.xlsx');
 }
 function csv(res,ref,cal){
-  const L=[['Target','Group','n','dCp_mean','dCp_SD','Normalized_mean','Normalized_SD','p_Welch','p_Holm','sig']];
+  const L=[['Target','Group','n','dCp_mean','dCp_SD','Normalized_mean','Normalized_SD','Normalized_SEM','p_Welch','p_Holm','sig']];
   res.forEach(g=>{ if(!g.ok)return;
     g.blocks.forEach(b=>{ if(!b.n)return;
-      L.push([g.target,`"${b.group}"`,b.n,F(b.dcpMean,4),F(b.dcpSd,4),F(b.mean,6),F(b.sd,6),
+      L.push([g.target,`"${b.group}"`,b.n,F(b.dcpMean,4),F(b.dcpSd,4),F(b.mean,6),F(b.sd,6),F(b.sem,6),
         b.group===cal?'':F(b.p,6), b.group===cal?'':F(b.padj,6), b.group===cal?'cal':stars(b.padj)]); }); });
   dl(new Blob(['\ufeff'+L.map(r=>r.join(',')).join('\n')],{type:'text/csv;charset=utf-8'}),'ddCt_summary.csv');
 }
