@@ -41,10 +41,11 @@
     .eq{font-size:11px;padding:8px 11px}
     .wrap{padding:0 18px 72px}
     .panel{padding:17px}
-    .ctrls{gap:13px}
-    .field{min-width:0;flex:1 1 100%}
-    select{max-width:100%;width:100%}
-    .filebar{flex:1 1 100%}
+    .ctrls{grid-template-columns:1fr;gap:13px}
+    .setbody{padding:16px}
+    .toolbar{padding:10px 16px;gap:9px}
+    .toolbar .lead{display:none}
+    .mapgrid{grid-template-columns:1fr}
     .gene-head h3{font-size:19px}
     table.data{font-size:12px}
     .alert{padding:13px 14px;gap:10px}
@@ -90,15 +91,68 @@
   .eyebrow::after{content:"";flex:1;height:1px;background:var(--rule)}
   .panel{background:var(--surface);border:1px solid var(--rule);border-radius:12px;padding:22px;box-shadow:var(--shadow)}
 
-  .ctrls{display:flex;gap:20px;flex-wrap:wrap;align-items:flex-end}
-  .field{display:flex;flex-direction:column;gap:6px;min-width:160px}
+  /* 설정 패널: 툴바 / 필드 그리드 / 칩 */
+  .panel.settings{padding:0}
+  .toolbar{display:flex;align-items:center;gap:12px;padding:12px 20px;
+    background:var(--paper);border-bottom:1px solid var(--rule);
+    border-radius:11px 11px 0 0}
+  .toolbar .lead{font-size:12px;font-weight:600;color:var(--ink-3);letter-spacing:.02em;flex:0 0 auto}
+  .toolbar .fn{font-family:'Spline Sans Mono',monospace;font-size:13px;font-weight:500;color:var(--ink);
+    flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .toolbar button{flex:0 0 auto;padding:6px 13px;font-size:12.5px}
+  .setbody{padding:20px}
+  .ctrls{display:grid;grid-template-columns:repeat(auto-fit,minmax(196px,1fr));gap:16px 18px;align-items:end}
+  .field{display:flex;flex-direction:column;gap:6px;min-width:0}
   label{font-size:12px;font-weight:600;color:var(--ink-2)}
-  select{font-family:'Pretendard Variable',Pretendard,sans-serif;font-size:14px;color:var(--ink);padding:8px 11px;
-    border:1px solid var(--rule);border-radius:7px;background:var(--surface);outline:none;max-width:230px}
+  select{font-family:'Pretendard Variable',Pretendard,sans-serif;font-size:14px;color:var(--ink);
+    padding:9px 32px 9px 11px;border:1px solid var(--rule);border-radius:8px;background:var(--surface);
+    outline:none;width:100%;appearance:none;cursor:pointer;
+    background-image:url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5L6 6.5L11 1.5' stroke='%235B6770' stroke-width='1.6' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-repeat:no-repeat;background-position:right 11px center;
+    text-overflow:ellipsis}
+  select:hover{border-color:var(--ink-3)}
   select:focus{border-color:var(--fam);box-shadow:0 0 0 3px var(--fam-wash)}
-  .switch{display:flex;align-items:center;gap:9px;font-size:13.5px;cursor:pointer;padding-bottom:9px}
-  .switch input{width:16px;height:16px;accent-color:var(--fam);cursor:pointer}
-  .chips{display:flex;flex-wrap:wrap;gap:7px;margin-top:14px}
+  select.enhanced{position:absolute;opacity:0;pointer-events:none;width:0;height:0}
+
+  /* --- 커스텀 드롭다운 --- */
+  .sel{position:relative;width:100%}
+  .sel.open{z-index:70}
+  .panel.settings{position:relative;z-index:5}
+  .setbody{position:relative}
+  .sel-btn{display:flex;align-items:center;gap:8px;width:100%;text-align:left;
+    font-family:'Pretendard Variable',Pretendard,sans-serif;font-size:14px;font-weight:400;color:var(--ink);
+    padding:9px 11px;border:1px solid var(--rule);border-radius:8px;background:var(--surface);cursor:pointer}
+  .sel-btn:hover{border-color:var(--ink-3)}
+  .sel-btn .val{flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .sel-btn .arw{flex:0 0 auto;transition:transform .18s cubic-bezier(.3,.9,.3,1);color:var(--ink-3)}
+  .sel.open .sel-btn{border-color:var(--fam);box-shadow:0 0 0 3px var(--fam-wash)}
+  .sel.open .sel-btn .arw{transform:rotate(180deg);color:var(--fam)}
+  .sel-btn:focus-visible{outline:none;border-color:var(--fam);box-shadow:0 0 0 3px var(--fam-wash)}
+
+  .sel-list{position:absolute;z-index:60;top:calc(100% + 6px);left:0;right:0;
+    background:var(--surface);border:1px solid var(--rule);border-radius:11px;
+    box-shadow:0 4px 8px -4px rgba(22,29,36,.10), 0 16px 40px -12px rgba(22,29,36,.22);
+    padding:5px;max-height:min(280px,45vh);overflow-y:auto;overscroll-behavior:contain;
+    -webkit-overflow-scrolling:touch;
+    opacity:0;transform:translateY(-5px) scale(.985);pointer-events:none;
+    transition:opacity .14s ease, transform .16s cubic-bezier(.3,.9,.3,1)}
+  .sel.open .sel-list{opacity:1;transform:none;pointer-events:auto}
+  .sel.up .sel-list{top:auto;bottom:calc(100% + 6px);transform:translateY(5px) scale(.985)}
+  .sel.up.open .sel-list{transform:none}
+  .sel-opt{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:7px;cursor:pointer;
+    font-size:14px;color:var(--ink);line-height:1.4}
+  .sel-opt .tick{flex:0 0 14px;color:var(--fam);opacity:0}
+  .sel-opt .lbl{flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .sel-opt:hover,.sel-opt.cursor{background:var(--paper)}
+  .sel-opt[aria-selected=true]{background:var(--fam-wash);color:var(--fam-deep);font-weight:600}
+  .sel-opt[aria-selected=true] .tick{opacity:1}
+  .sel-list::-webkit-scrollbar{width:8px}
+  .sel-list::-webkit-scrollbar-thumb{background:#DFE4E2;border-radius:8px;border:2px solid var(--surface)}
+  @media (prefers-reduced-motion:reduce){
+    .sel-list,.sel-btn .arw{transition:none}
+  }
+  .chipwrap{margin-top:20px;padding-top:16px;border-top:1px solid var(--rule)}
+  .chips{display:flex;flex-wrap:wrap;gap:7px;margin-top:9px}
   .chip{font-size:12.5px;padding:5px 10px;border:1px solid var(--rule);border-radius:20px;background:var(--paper);
     cursor:grab;user-select:none;display:flex;align-items:center;gap:7px}
   .chip.drag{opacity:.35}
@@ -106,14 +160,14 @@
   .chip.cal{border-color:var(--fam);background:var(--fam-wash);color:var(--fam-deep);font-weight:600}
   .hint{font-size:12px;color:var(--ink-3);margin-top:9px}
 
-  details.map{margin-top:16px;border-top:1px solid var(--rule);padding-top:14px}
+  details.map{margin-top:18px;border-top:1px solid var(--rule);padding-top:15px}
   details.map summary{font-size:12.5px;color:var(--fam-deep);cursor:pointer;font-weight:600;list-style:none;
     display:flex;align-items:center;gap:6px}
   details.map summary::-webkit-details-marker{display:none}
   details.map summary::before{content:"▸";transition:transform .15s;display:inline-block}
   details.map[open] summary::before{transform:rotate(90deg)}
   details.map .body{margin-top:14px}
-  .mapgrid{display:flex;gap:16px;flex-wrap:wrap;align-items:flex-end}
+  .mapgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(158px,1fr));gap:14px 16px;align-items:end}
 
   .plate-head{display:flex;justify-content:space-between;align-items:baseline;gap:16px;flex-wrap:wrap;margin-bottom:6px}
   .legend{display:flex;gap:16px;flex-wrap:wrap;font-size:12px;color:var(--ink-2)}
@@ -216,10 +270,6 @@
   .mark{cursor:pointer;border-radius:10px;padding:4px 6px;margin:-4px -6px;transition:background .13s}
   .mark:hover{background:var(--fam-wash)}
   .mark:focus-visible{outline:2px solid var(--fam);outline-offset:2px}
-  .filebar{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--ink-2);
-    background:var(--paper);border:1px solid var(--rule);border-radius:8px;padding:7px 12px}
-  .filebar .fn{font-family:'Spline Sans Mono',monospace;color:var(--ink);font-weight:500;
-    max-width:230px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 
   /* --- 경고 (강화) --- */
   .alert{display:flex;gap:13px;align-items:flex-start;padding:15px 17px;border-radius:11px;
@@ -330,22 +380,28 @@
   <div id="app" class="hidden">
     <section>
       <div class="eyebrow">설정</div>
-      <div class="panel">
-        <div class="ctrls">
-          <div class="field"><label for="ref">Reference (housekeeping)</label><select id="ref"></select></div>
-          <div class="field"><label for="cal">Calibrator (=1 기준군)</label><select id="cal"></select></div>
-          <div class="field"><label for="pairmode">Replicate 처리 방식</label>
-            <select id="pairmode">
-              <option value="sorted">Ct 정렬 후 pairing (랩 관행)</option>
-              <option value="well">well 순서대로 pairing</option>
-              <option value="nopair">pairing 안 함 — reference 평균으로 (권장)</option>
-            </select></div>
-          <div style="flex:1"></div>
-          <div class="filebar"><span>열린 파일</span><span class="fn" id="fname">—</span></div>
+      <div class="panel settings">
+        <div class="toolbar">
+          <span class="lead">열린 파일</span>
+          <span class="fn" id="fname">—</span>
           <button id="reset">처음으로</button>
         </div>
-        <div class="chips" id="chips"></div>
-        <div class="hint">칩을 끌어서 그래프 x축 순서를 바꿀 수 있음.</div>
+        <div class="setbody">
+          <div class="ctrls">
+            <div class="field"><label for="ref">Reference (housekeeping)</label><select id="ref"></select></div>
+            <div class="field"><label for="cal">Calibrator (=1 기준군)</label><select id="cal"></select></div>
+            <div class="field"><label for="pairmode">Replicate 처리 방식</label>
+              <select id="pairmode">
+                <option value="sorted">Ct 정렬 후 pairing</option>
+                <option value="well">well 순서대로 pairing</option>
+                <option value="nopair">pairing 안 함 — reference 평균</option>
+              </select></div>
+          </div>
+
+          <div class="chipwrap">
+            <label>그래프 x축 순서 — 칩을 끌어서 바꾸기</label>
+            <div class="chips" id="chips"></div>
+          </div>
 
         <details class="map" id="mapbox">
           <summary>컬럼 매핑 — 기기·소프트웨어마다 헤더가 다를 때</summary>
@@ -361,6 +417,7 @@
             <div class="hint" id="maphint"></div>
           </div>
         </details>
+        </div>
       </div>
     </section>
 
@@ -429,7 +486,7 @@
 
     <footer>
       <b>계산.</b> Reference로 정규화 후 calibrator를 1로 두는 2<sup>−∆∆Ct</sup> (Livak) 방식.
-      Replicate 처리는 세 가지 중 선택 — Ct 정렬 pairing(많은 랩의 관행), well 순서 pairing,
+      Replicate 처리는 세 가지 중 선택 — Ct 정렬 pairing, well 순서 pairing,
       또는 pairing 없이 각 target replicate에서 reference 평균을 빼는 방식.
       technical replicate는 교환 가능한 값이라 평균은 셋 다 같고, <b>SD와 p값만 달라집니다.</b>
       막대 = 정규화값 평균, 오차막대 = 표본표준편차(<code>STDEV</code>, n−1), 점 = 개별 replicate.<br>
@@ -453,6 +510,92 @@ const F=(x,d=4)=>(x==null||!isFinite(x))?'—':x.toFixed(d);
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 
 const DEMO=[["A1","CON","GAPDH",15.8979],["A2","CON","GAPDH",15.5161],["A3","CON","GAPDH",15.7701],["A4","Cis 25uM","GAPDH",15.7283],["A5","Cis 25uM","GAPDH",15.4534],["A6","Cis 25uM","GAPDH",15.8493],["A7","Cis 25uM 2","GAPDH",14.7344],["A8","Cis 25uM 2","GAPDH",14.9834],["A9","Cis 25uM 2","GAPDH",15.1665],["A10","ul 10ug/ml","GAPDH",15.0873],["A11","ul 10ug/ml","GAPDH",15.2916],["A12","ul 10ug/ml","GAPDH",15.1541],["B1","CON","MuRF1",21.7651],["B2","CON","MuRF1",22.0916],["B3","CON","MuRF1",21.9247],["B4","Cis 25uM","MuRF1",21.462],["B5","Cis 25uM","MuRF1",21.5372],["B6","Cis 25uM","MuRF1",21.5219],["B7","Cis 25uM 2","MuRF1",20.9268],["B8","Cis 25uM 2","MuRF1",21.1521],["B9","Cis 25uM 2","MuRF1",21.4241],["B10","ul 10ug/ml","MuRF1",21.2265],["B11","ul 10ug/ml","MuRF1",21.3947],["B12","ul 10ug/ml","MuRF1",21.3164],["C1","CON","Atrogin1",23.8942],["C2","CON","Atrogin1",23.6153],["C3","CON","Atrogin1",23.4534],["C4","Cis 25uM","Atrogin1",23.7841],["C5","Cis 25uM","Atrogin1",24.1234],["C6","Cis 25uM","Atrogin1",23.9012],["C7","Cis 25uM 2","Atrogin1",23.1876],["C8","Cis 25uM 2","Atrogin1",23.4521],["C9","Cis 25uM 2","Atrogin1",23.6109],["C10","ul 10ug/ml","Atrogin1",23.8734],["C11","ul 10ug/ml","Atrogin1",23.9521],["C12","ul 10ug/ml","Atrogin1",24.0187],["D1","CON","ERFE",24.6123],["D2","CON","ERFE",24.4517],["D3","CON","ERFE",24.7902],["D4","Cis 25uM","ERFE",35.4231],["D5","Cis 25uM","ERFE",36.1204],["D6","Cis 25uM","ERFE",36.7318],["D7","Cis 25uM 2","ERFE",24.3187],["D8","Cis 25uM 2","ERFE",24.6032],["D9","Cis 25uM 2","ERFE",30.7145],["D10","ul 10ug/ml","ERFE",25.4218],["D11","ul 10ug/ml","ERFE",25.6033],["D12","ul 10ug/ml","ERFE",25.5127],["E1","CON","ID1",20.1234],["E2","CON","ID1",20.3417],["E3","CON","ID1",20.2108],["E4","Cis 25uM","ID1",19.9812],["E5","Cis 25uM","ID1",20.1523],["E6","Cis 25uM","ID1",20.0917],["E7","Cis 25uM 2","ID1",19.0321],["E8","Cis 25uM 2","ID1",19.3104],["E9","Cis 25uM 2","ID1",19.5218],["E10","ul 10ug/ml","ID1",19.3812],["E11","ul 10ug/ml","ID1",19.5027],["E12","ul 10ug/ml","ID1",19.4419]];
+
+
+/* ============ 커스텀 드롭다운 ============
+   네이티브 <select>는 값의 원천으로 그대로 두고, 화면에만 커스텀 UI를 씌운다.
+   옵션이 innerHTML로 갈아끼워져도 MutationObserver가 알아서 다시 그린다. */
+const ARW='<svg class="arw" width="12" height="8" viewBox="0 0 12 8" fill="none"><path d="M1 1.5L6 6.5L11 1.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>';
+const TICK='<svg class="tick" width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2.5 7.5L5.5 10.5L11.5 3.5" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+
+function enhance(sel){
+  if(sel.dataset.enh) { redraw(sel); return; }
+  sel.dataset.enh='1'; sel.classList.add('enhanced');
+
+  const box=document.createElement('div'); box.className='sel';
+  const btn=document.createElement('button'); btn.type='button'; btn.className='sel-btn';
+  btn.setAttribute('aria-haspopup','listbox'); btn.setAttribute('aria-expanded','false');
+  const list=document.createElement('div'); list.className='sel-list'; list.setAttribute('role','listbox');
+  box.append(btn,list);
+  sel.parentNode.insertBefore(box,sel);
+  box.appendChild(sel);
+  sel._box=box; sel._btn=btn; sel._list=list;
+
+  let cur=-1;
+  const close=()=>{ box.classList.remove('open'); btn.setAttribute('aria-expanded','false'); cur=-1; paint(); };
+  const open=()=>{
+    document.querySelectorAll('.sel.open').forEach(o=>{ if(o!==box) o.classList.remove('open'); });
+    // 아래 공간이 부족하면 위로 펼친다
+    const r=btn.getBoundingClientRect();
+    const need=Math.min(280, window.innerHeight*0.45);
+    box.classList.toggle('up', (window.innerHeight-r.bottom < need+16) && (r.top > need+16));
+    box.classList.add('open'); btn.setAttribute('aria-expanded','true');
+    cur=sel.selectedIndex; paint();
+    const a=list.children[cur]; if(a) a.scrollIntoView({block:'nearest'});
+  };
+  const paint=()=>{ [...list.children].forEach((o,i)=>o.classList.toggle('cursor',i===cur)); };
+  const pick=i=>{
+    if(i<0||i>=sel.options.length) return;
+    sel.selectedIndex=i;
+    redraw(sel);
+    sel.dispatchEvent(new Event('change',{bubbles:true}));
+    close(); btn.focus();
+  };
+  sel._pick=pick;
+
+  btn.onclick=e=>{ e.stopPropagation(); box.classList.contains('open')?close():open(); };
+  btn.onkeydown=e=>{
+    const isOpen=box.classList.contains('open');
+    if(e.key==='Escape'){ close(); return; }
+    if(e.key==='Enter'||e.key===' '){
+      e.preventDefault();
+      isOpen ? pick(cur>=0?cur:sel.selectedIndex) : open();
+      return;
+    }
+    if(e.key==='ArrowDown'||e.key==='ArrowUp'){
+      e.preventDefault();
+      if(!isOpen){ open(); return; }
+      const d=e.key==='ArrowDown'?1:-1;
+      cur=Math.max(0,Math.min(sel.options.length-1,(cur<0?sel.selectedIndex:cur)+d));
+      paint(); list.children[cur]?.scrollIntoView({block:'nearest'});
+    }
+  };
+  box._close=close;
+
+  new MutationObserver(()=>redraw(sel)).observe(sel,{childList:true});
+  redraw(sel);
+}
+
+function redraw(sel){
+  const {_btn:btn,_list:list}=sel;
+  if(!btn) return;
+  const opts=[...sel.options];
+  btn.innerHTML=`<span class="val">${esc(opts[sel.selectedIndex]?.text ?? '—')}</span>${ARW}`;
+  list.innerHTML=opts.map((o,i)=>
+    `<div class="sel-opt" role="option" data-i="${i}" aria-selected="${i===sel.selectedIndex}">
+       ${TICK}<span class="lbl">${esc(o.text)}</span></div>`).join('');
+  [...list.children].forEach(el=>{
+    el.onclick=e=>{ e.stopPropagation(); sel._pick(+el.dataset.i); };
+  });
+}
+document.addEventListener('click',()=>document.querySelectorAll('.sel.open').forEach(b=>b._close&&b._close()));
+document.addEventListener('keydown',e=>{ if(e.key==='Escape')
+  document.querySelectorAll('.sel.open').forEach(b=>b._close&&b._close()); });
+
+function enhanceAll(){
+  ['ref','cal','pairmode','m-sheet','m-hdr','m-smp','m-tgt','m-ct','m-well']
+    .forEach(id=>{ const el=document.getElementById(id); if(el) enhance(el); });
+}
 
 /* ============ 통계 함수 ============ */
 function gammaln(x){
@@ -604,6 +747,7 @@ function buildSheetUI(cur){
   if(!WB || WB.SheetNames.length<2){ f.style.display='none'; return; }
   f.style.display='';
   sel.innerHTML=WB.SheetNames.map(n=>`<option ${n===cur?'selected':''}>${esc(n)}</option>`).join('');
+  enhance(sel);
   sel.onchange=()=>loadSheet(sel.value, true);
 }
 function fail(msg){
@@ -649,6 +793,7 @@ function buildMapUI(autoOK){
       `<option value="${i}">${i+1}행 — ${esc(preview)}</option>`);
   }
   hdrSel.value=MAP.hdr;
+  enhance(hdrSel);
   hdrSel.onchange=()=>{ MAP.hdr=+hdrSel.value; fillColSelects(); ingest(); };
   fillColSelects();
   ['m-smp','m-tgt','m-ct','m-well'].forEach(id=>{
@@ -689,6 +834,7 @@ function fillColSelects(){
   };
   set('m-smp',MAP.smp,false); set('m-tgt',MAP.tgt,false);
   set('m-ct',MAP.ct,false);   set('m-well',MAP.well,true);
+  enhanceAll();
   MAP.smp=+document.getElementById('m-smp').value;
   MAP.tgt=+document.getElementById('m-tgt').value;
   MAP.ct =+document.getElementById('m-ct').value;
@@ -732,6 +878,7 @@ function ingest(){
   calSel.value=c||samples[0];
   refSel.onchange=calSel.onchange=document.getElementById('pairmode').onchange=render;
 
+  enhanceAll();
   document.getElementById('fname').textContent=FNAME||'—';
   document.getElementById('landing').classList.add('hidden');
   document.getElementById('app').classList.remove('hidden');
