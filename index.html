@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="ko">
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>ΔΔCt — qPCR 분석기</title>
+<title>ΔΔCt — qPCR analyzer</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
@@ -30,11 +30,15 @@
   .mark{display:flex;align-items:center;gap:14px}
   h1{font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:30px;letter-spacing:-.02em;line-height:1.1}
   .sub{color:var(--ink-2);font-size:14px;margin-top:3px}
-  .eq{font-family:'Spline Sans Mono',monospace;font-size:12px;color:var(--ink-2);
-    background:var(--surface);border:1px solid var(--rule);border-radius:6px;padding:9px 13px;
-    max-width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch}
-  .eq code{white-space:nowrap;display:inline-block}
-  .eq b{color:var(--fam-deep);font-weight:600}
+  .eq{font-family:'Pretendard Variable',Pretendard,sans-serif;font-size:13px;color:var(--ink-2);
+    background:var(--surface);border:1px solid var(--rule);border-radius:8px;padding:10px 14px;
+    max-width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch;letter-spacing:.01em}
+  .eq code{white-space:nowrap;display:inline-block;font-family:inherit;font-size:inherit;background:none;padding:0}
+  .eq b{color:var(--fam-deep);font-weight:700}
+  .eq sub{font-size:.68em;font-weight:500;vertical-align:-.22em;margin-left:.5px;
+    letter-spacing:.02em;color:var(--ink-3)}
+  .eq sup{font-size:.72em;font-weight:700;vertical-align:.42em;margin-left:.5px}
+  .eq .ar{color:var(--ink-3);margin:0 .5em;font-weight:400}
   @media(max-width:640px){
     .head-in{padding:22px 18px 20px;gap:14px}
     h1{font-size:25px}
@@ -76,9 +80,13 @@
   table.ex td{border:1px solid var(--rule);padding:5px 11px;color:var(--ink)}
   table.ex tr:nth-child(even) td{background:#FBFCFB}
   .instr{width:100%;border-collapse:collapse;font-size:13px;margin-top:4px}
-  .instr th{text-align:left;font-size:11px;font-family:'Spline Sans Mono',monospace;letter-spacing:.05em;
-    text-transform:uppercase;color:var(--ink-3);padding:0 12px 8px 0;border-bottom:1px solid var(--rule)}
-  .instr td{padding:9px 12px 9px 0;border-bottom:1px solid #EFF2F0;vertical-align:top}
+  .instr th{text-align:left;font-size:11px;font-family:'Pretendard Variable',Pretendard,sans-serif;
+    font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--ink-3);
+    padding:0 12px 8px 0;border-bottom:1px solid var(--rule)}
+  .instr td{padding:10px 12px;border-bottom:1px solid #EFF2F0;vertical-align:top}
+  .instr td+td{border-left:1px solid #F1F4F2}
+  .instr th:first-child,.instr td:first-child{padding-left:0}
+  .instr tbody tr:hover td{background:#FAFBFA}
   .instr td:first-child{font-weight:600;white-space:nowrap}
   .instr td:nth-child(2){color:var(--ink-2)}
   .instr code{font-family:'Spline Sans Mono',monospace;background:var(--paper);
@@ -86,8 +94,9 @@
   @media(max-width:640px){ .instr td:first-child{white-space:normal} }
 
   section{margin-top:38px}
-  .eyebrow{font-family:'Spline Sans Mono',monospace;font-size:11px;font-weight:600;letter-spacing:.13em;
-    text-transform:uppercase;color:var(--ink-3);display:flex;align-items:center;gap:11px;margin-bottom:14px}
+  .eyebrow{font-family:'Pretendard Variable',Pretendard,sans-serif;font-size:11.5px;font-weight:700;
+    letter-spacing:.14em;text-transform:uppercase;color:var(--ink-3);
+    display:flex;align-items:center;gap:12px;margin-bottom:15px}
   .eyebrow::after{content:"";flex:1;height:1px;background:var(--rule)}
   .panel{background:var(--surface);border:1px solid var(--rule);border-radius:12px;padding:22px;box-shadow:var(--shadow)}
 
@@ -213,24 +222,31 @@
   .gene-body{display:grid;grid-template-columns:minmax(0,1.02fr) minmax(0,1fr);gap:26px;align-items:start}
   @media(max-width:920px){.gene-body{grid-template-columns:1fr}}
   table.data{width:100%;border-collapse:collapse;font-size:13px}
-  table.data th{font-family:'Spline Sans Mono',monospace;font-size:10.5px;font-weight:600;letter-spacing:.06em;
-    text-transform:uppercase;color:var(--ink-3);text-align:right;padding:0 0 8px;border-bottom:1px solid var(--rule)}
-  table.data th:first-child{text-align:left}
-  table.data td{padding:7px 0;border-bottom:1px solid #EFF2F0;text-align:right;
+  table.data th{font-family:'Spline Sans Mono',monospace;font-size:10.5px;font-weight:600;letter-spacing:.05em;
+    text-transform:uppercase;color:var(--ink-3);text-align:right;padding:0 9px 9px;
+    border-bottom:1.5px solid var(--ink-3)}
+  table.data th:first-child{text-align:left;padding-left:8px}
+  table.data th:last-child{padding-right:8px}
+  table.data th+th{border-left:1px solid var(--rule)}
+  table.data td{padding:8px 9px;border-bottom:1px solid #EFF2F0;text-align:right;
     font-family:'Spline Sans Mono',monospace;font-variant-numeric:tabular-nums}
-  table.data td:first-child{text-align:left;font-family:'Pretendard Variable',Pretendard,sans-serif;font-weight:500}
-  table.data tr.calrow td{background:var(--fam-wash)}
-  table.data tr.calrow td:first-child{color:var(--fam-deep);border-radius:5px 0 0 5px;padding-left:7px}
-  table.data tr.calrow td:last-child{border-radius:0 5px 5px 0;padding-right:7px}
+  table.data td+td{border-left:1px solid #F1F4F2}
+  table.data td:first-child{text-align:left;padding-left:8px;
+    font-family:'Pretendard Variable',Pretendard,sans-serif;font-weight:600}
+  table.data td:last-child{padding-right:8px}
+  table.data tbody tr:hover td{background:#FAFBFA}
+  table.data tr.calrow td{background:var(--fam-wash);border-left-color:#CBE4E6}
+  table.data tr.calrow:hover td{background:#DAEDEE}
+  table.data tr.calrow td:first-child{color:var(--fam-deep)}
   .sd{color:var(--ink-3);font-size:12px}
   .n{color:var(--ink-3);font-size:11.5px}
   .star{font-weight:700;color:var(--fam-deep)}
   .ns{color:var(--ink-3);font-size:11.5px}
   .chartbox{border:1px solid var(--rule);border-radius:10px;padding:6px;background:var(--surface)}
   .chartbox svg{width:100%;height:auto;display:block}
-  .anova{font-size:12.5px;color:var(--ink-2);margin-top:12px;padding:9px 12px;background:var(--paper);
-    border-radius:7px;font-family:'Spline Sans Mono',monospace}
-  .anova b{color:var(--ink)}
+  .anova{font-size:13px;color:var(--ink-2);margin-top:12px;padding:10px 13px;background:var(--paper);
+    border-radius:8px;font-family:'Pretendard Variable',Pretendard,sans-serif}
+  .anova b{color:var(--ink);font-family:'Spline Sans Mono',monospace;font-weight:600}
 
   details.trace{margin-top:16px;border-top:1px solid var(--rule);padding-top:13px}
   details.trace summary{font-size:12.5px;color:var(--fam-deep);cursor:pointer;font-weight:600;list-style:none;display:flex;gap:6px;align-items:center}
@@ -238,30 +254,50 @@
   details.trace summary::before{content:"▸";transition:transform .15s;display:inline-block}
   details.trace[open] summary::before{transform:rotate(90deg)}
   .tracetbl{width:100%;border-collapse:collapse;font-size:12px;margin-top:12px}
-  .tracetbl th{font-family:'Spline Sans Mono',monospace;font-size:10px;font-weight:600;letter-spacing:.05em;
-    text-transform:uppercase;color:var(--ink-3);text-align:right;padding:0 6px 7px;border-bottom:1px solid var(--rule)}
+  .tracetbl th{font-family:'Spline Sans Mono',monospace;font-size:10px;font-weight:600;letter-spacing:.04em;
+    text-transform:uppercase;color:var(--ink-3);text-align:right;padding:0 8px 8px;
+    border-bottom:1.5px solid var(--ink-3);white-space:nowrap}
   .tracetbl th:first-child,.tracetbl th:nth-child(2){text-align:left}
-  .tracetbl td{padding:5px 6px;text-align:right;border-bottom:1px solid #F2F4F2;
+  .tracetbl th+th{border-left:1px solid var(--rule)}
+  .tracetbl td{padding:6px 8px;text-align:right;border-bottom:1px solid #F2F4F2;
     font-family:'Spline Sans Mono',monospace;font-variant-numeric:tabular-nums}
+  .tracetbl td+td{border-left:1px solid #F4F6F4}
   .tracetbl td:first-child,.tracetbl td:nth-child(2){text-align:left}
-  .tracetbl tr.gsep td{padding-top:11px}
+  .tracetbl tbody tr:hover td{background:#FAFBFA}
+  /* 계산 단계별 색 구분: ∆Cp / ∆∆Cp / 2^ / Normalized */
+  .tracetbl td:nth-child(5),.tracetbl th:nth-child(5){background:#FBFCFB}
+  .tracetbl td:nth-child(8){background:var(--fam-wash);font-weight:600;color:var(--fam-deep)}
+  .tracetbl th:nth-child(8){color:var(--fam-deep)}
+  .tracetbl tr.gsep td{padding-top:12px;border-top:1px solid var(--rule)}
   .tracetbl .gname{font-family:'Pretendard Variable',Pretendard,sans-serif;font-weight:600}
   .tracetbl .calc{color:var(--ink-3);font-size:11px}
 
   .export{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
   .export .note{font-size:12.5px;color:var(--ink-3)}
   .hidden{display:none}
+  .lang{display:inline-flex;border:1px solid var(--rule);border-radius:8px;overflow:hidden;background:var(--surface)}
+  .lang button{border:none;border-radius:0;padding:5px 11px;font-size:12px;font-weight:600;
+    color:var(--ink-3);background:transparent;letter-spacing:.03em}
+  .lang button+button{border-left:1px solid var(--rule)}
+  .lang button:hover{background:var(--paper);border-color:transparent}
+  .lang button[aria-pressed=true]{background:var(--fam);color:#fff}
+  .headright{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
 
   /* --- 방식 비교 --- */
   .cmp{width:100%;border-collapse:collapse;font-size:13px}
-  .cmp th{font-family:'Spline Sans Mono',monospace;font-size:10.5px;font-weight:600;letter-spacing:.05em;
-    text-transform:uppercase;color:var(--ink-3);text-align:right;padding:0 10px 8px 0;border-bottom:1px solid var(--rule)}
+  .cmp th{font-family:'Pretendard Variable',Pretendard,sans-serif;font-size:10.5px;font-weight:700;letter-spacing:.09em;
+    text-transform:uppercase;color:var(--ink-3);text-align:right;padding:0 10px 9px;
+    border-bottom:1.5px solid var(--ink-3);white-space:nowrap}
   .cmp th:first-child,.cmp th:nth-child(2){text-align:left}
-  .cmp td{padding:7px 10px 7px 0;border-bottom:1px solid #EFF2F0;text-align:right;
+  .cmp th+th{border-left:1px solid var(--rule)}
+  .cmp td{padding:8px 10px;border-bottom:1px solid #EFF2F0;text-align:right;
     font-family:'Spline Sans Mono',monospace;font-variant-numeric:tabular-nums}
-  .cmp td:first-child,.cmp td:nth-child(2){text-align:left;font-family:'Pretendard Variable',Pretendard,sans-serif}
-  .cmp td:first-child{font-weight:600}
-  .cmp tr.gsep td{padding-top:12px}
+  .cmp td+td{border-left:1px solid #F1F4F2}
+  .cmp td:first-child,.cmp td:nth-child(2){text-align:left;
+    font-family:'Pretendard Variable',Pretendard,sans-serif}
+  .cmp td:first-child{font-weight:700;color:var(--ink)}
+  .cmp tbody tr:hover td{background:#FAFBFA}
+  .cmp tr.gsep td{padding-top:13px;border-top:1px solid var(--rule)}
   .cmp .cur{color:var(--fam-deep);font-weight:600}
   .cmp .low{color:var(--rox);font-weight:600}
   .cmp .mode{font-size:12px;color:var(--ink-2)}
@@ -297,40 +333,43 @@
 
 <header>
   <div class="head-in">
-    <div class="mark" id="home" tabindex="0" role="button" title="처음으로">
+    <div class="mark" id="home" tabindex="0" role="button" data-i-title="homeTip">
       <svg width="38" height="38" viewBox="0 0 38 38" fill="none" aria-hidden="true">
         <rect x="1" y="1" width="36" height="36" rx="9" fill="#E4F2F3" stroke="#0E8C99" stroke-width="1.4"/>
         <path d="M7 28c6.5 0 5-13 12-13s5.5 9 12 9" stroke="#0E8C99" stroke-width="2.1" stroke-linecap="round" fill="none"/>
         <circle cx="12" cy="12" r="2.2" fill="#D8453C"/>
       </svg>
-      <div><h1>ΔΔCt</h1><div class="sub">qPCR 결과 파일을 상대 발현량으로</div></div>
+      <div><h1>ΔΔCt</h1><div class="sub" data-i="sub"></div></div>
     </div>
-    <div class="eq"><code>∆Cp = Ct<sub>target</sub> − Ct<sub>ref</sub> &nbsp;→&nbsp; ∆∆Cp = ∆Cp − ∆Cp<sub>cal</sub> &nbsp;→&nbsp; <b>2^(−∆∆Cp)</b></code></div>
+    <div class="headright">
+      <div class="eq"><code data-i="eq"></code></div>
+      <div class="lang">
+        <button data-lang="ko" aria-pressed="false">KO</button>
+        <button data-lang="en" aria-pressed="false">EN</button>
+      </div>
+    </div>
   </div>
 </header>
 
 <div class="wrap">
   <div id="landing">
     <div class="drop" id="drop" tabindex="0" role="button" aria-label="결과 파일 열기">
-      <h2>결과 파일을 여기에 끌어다 놓기</h2>
-      <p>QuantStudio · SDS · LightCycler export (.xlsx / .xls / .csv)</p>
-      <div class="priv">파일은 브라우저 안에서만 처리됨. 어디에도 업로드되지 않음.</div>
+      <h2 data-i="dropH"></h2>
+      <p data-i="dropP"></p>
+      <div class="priv" data-i="dropPriv"></div>
       <input type="file" id="file" accept=".xlsx,.xls,.csv" class="hidden">
     </div>
-    <div class="demo-line">파일이 없어도 괜찮음.<button class="link" id="demo">예시 데이터로 먼저 해보기</button></div>
+    <div class="demo-line"><span data-i="demoLead"></span><button class="link" id="demo" data-i="demoBtn"></button></div>
 
     <section class="guide">
-      <div class="eyebrow">어떤 파일을 올리면 되나</div>
+      <div class="eyebrow" data-i="gdEye"></div>
       <div class="panel">
-        <p style="font-size:14px;line-height:1.65">
-          기기 소프트웨어에서 <b>결과 표를 그대로 내보낸 파일</b>이면 됩니다. 가공하지 말고 export한 원본을 그대로 올리세요.
-          컬럼 이름이 달라도 <b>세 가지 정보</b>만 들어 있으면 읽습니다.
-        </p>
+        <p style="font-size:14px;line-height:1.65" data-i="gdIntro"></p>
         <div class="need">
-          <div class="col"><div class="nm">Sample</div><div class="ex">CON, Cis 25uM …</div></div>
-          <div class="col"><div class="nm">Target</div><div class="ex">GAPDH, MuRF1 …</div></div>
-          <div class="col"><div class="nm">Ct / Cq / Cp</div><div class="ex">21.76, 15.89 …</div></div>
-          <div class="col opt"><div class="nm">Well</div><div class="ex">선택 — plate 그림용</div></div>
+          <div class="col"><div class="nm">Sample</div><div class="ex" data-i="gdSample"></div></div>
+          <div class="col"><div class="nm">Target</div><div class="ex" data-i="gdTarget"></div></div>
+          <div class="col"><div class="nm">Ct / Cq / Cp</div><div class="ex" data-i="gdCt"></div></div>
+          <div class="col opt"><div class="nm">Well</div><div class="ex" data-i="gdWellEx"></div></div>
         </div>
         <div class="exdemo">
           <table class="ex">
@@ -343,76 +382,71 @@
         </div>
         <div class="alert danger" style="margin:20px 0 22px">
           <div class="ico">!</div>
-          <div class="txt"><b>replicate 한 줄씩 그대로 있어야 합니다</b>
-            평균이 미리 계산된 <code style="font-family:'Spline Sans Mono',monospace">Ct Mean</code> 표는 쓸 수 없습니다.
-            3반복이면 같은 조합이 3줄로 있어야 SD와 p값이 나옵니다.</div>
+          <div class="txt"><b data-i="gdWarnT"></b><span data-i="gdWarnB"></span></div>
         </div>
 
-        <div class="eyebrow" style="margin-top:26px">기기별로 어디서 내보내나</div>
+        <div class="eyebrow" style="margin-top:26px" data-i="gdInstrEye"></div>
         <table class="instr">
-          <thead><tr><th>기기 · 소프트웨어</th><th>내보내는 방법</th><th>Ct 컬럼</th></tr></thead>
+          <thead><tr><th data-i="gdC1"></th><th data-i="gdC2"></th><th data-i="gdC3"></th></tr></thead>
           <tbody>
             <tr><td>Applied Biosystems<br>QuantStudio</td>
-              <td>Design &amp; Analysis 또는 QuantStudio SW → <b>Export</b> → Results (.xlsx)</td>
+              <td data-i="gdI1"></td>
               <td><code>CT</code></td></tr>
             <tr><td>ABI 7500 · StepOnePlus<br>(SDS)</td>
-              <td>File → Export → <b>Results</b> (.xls / .txt)</td>
+              <td data-i="gdI2"></td>
               <td><code>CT</code></td></tr>
             <tr><td>Bio-Rad CFX<br>(CFX Maestro)</td>
-              <td>Export → <b>Quantification Cq Results</b> (.csv)</td>
+              <td data-i="gdI3"></td>
               <td><code>Cq</code></td></tr>
             <tr><td>Roche LightCycler 480</td>
-              <td>Analysis 화면 → 표 우클릭 → <b>Export table</b> (.txt)</td>
+              <td data-i="gdI4"></td>
               <td><code>Cp</code></td></tr>
             <tr><td>Agilent AriaMx</td>
-              <td>Export → <b>Tabular Results</b> (.csv)</td>
+              <td data-i="gdI5"></td>
               <td><code>Cq</code></td></tr>
           </tbody>
         </table>
-        <div class="hint" style="margin-top:16px;line-height:1.7">
-          목록에 없는 기기여도 괜찮습니다. 표 형태이기만 하면 올린 뒤 <b>컬럼 매핑</b>에서
-          어느 열이 무엇인지 직접 지정할 수 있습니다. 시트가 여러 개인 파일도 시트를 골라서 읽습니다.
-        </div>
+        <div class="hint" style="margin-top:16px;line-height:1.7" data-i="gdFoot"></div>
       </div>
     </section>
   </div>
 
   <div id="app" class="hidden">
     <section>
-      <div class="eyebrow">설정</div>
+      <div class="eyebrow" data-i="eyeSet"></div>
       <div class="panel settings">
         <div class="toolbar">
-          <span class="lead">열린 파일</span>
+          <span class="lead" data-i="fileLead"></span>
           <span class="fn" id="fname">—</span>
-          <button id="reset">처음으로</button>
+          <button id="reset" data-i="resetBtn"></button>
         </div>
         <div class="setbody">
           <div class="ctrls">
-            <div class="field"><label for="ref">Reference (housekeeping)</label><select id="ref"></select></div>
-            <div class="field"><label for="cal">Calibrator (=1 기준군)</label><select id="cal"></select></div>
-            <div class="field"><label for="pairmode">Replicate 처리 방식</label>
+            <div class="field"><label for="ref" data-i="lbRef"></label><select id="ref"></select></div>
+            <div class="field"><label for="cal" data-i="lbCal"></label><select id="cal"></select></div>
+            <div class="field"><label for="pairmode" data-i="lbMode"></label>
               <select id="pairmode">
-                <option value="sorted">Ct 정렬 후 pairing</option>
-                <option value="well">well 순서대로 pairing</option>
-                <option value="nopair">pairing 안 함 — reference 평균</option>
+                <option value="sorted" data-i="mSorted"></option>
+                <option value="well" data-i="mWell"></option>
+                <option value="nopair" data-i="mNopair"></option>
               </select></div>
           </div>
 
           <div class="chipwrap">
-            <label>그래프 x축 순서 — 칩을 끌어서 바꾸기</label>
+            <label data-i="lbOrder"></label>
             <div class="chips" id="chips"></div>
           </div>
 
         <details class="map" id="mapbox">
-          <summary>컬럼 매핑 — 기기·소프트웨어마다 헤더가 다를 때</summary>
+          <summary data-i="mapSum"></summary>
           <div class="body">
             <div class="mapgrid">
-              <div class="field" id="sheetfield"><label for="m-sheet">시트</label><select id="m-sheet"></select></div>
-              <div class="field"><label for="m-hdr">헤더 행</label><select id="m-hdr"></select></div>
-              <div class="field"><label for="m-smp">Sample (실험군)</label><select id="m-smp"></select></div>
-              <div class="field"><label for="m-tgt">Target (유전자)</label><select id="m-tgt"></select></div>
-              <div class="field"><label for="m-ct">Ct / Cq / Cp</label><select id="m-ct"></select></div>
-              <div class="field"><label for="m-well">Well (선택)</label><select id="m-well"></select></div>
+              <div class="field" id="sheetfield"><label for="m-sheet" data-i="lbSheet"></label><select id="m-sheet"></select></div>
+              <div class="field"><label for="m-hdr" data-i="lbHdr"></label><select id="m-hdr"></select></div>
+              <div class="field"><label for="m-smp" data-i="lbSmp"></label><select id="m-smp"></select></div>
+              <div class="field"><label for="m-tgt" data-i="lbTgt"></label><select id="m-tgt"></select></div>
+              <div class="field"><label for="m-ct" data-i="lbCt"></label><select id="m-ct"></select></div>
+              <div class="field"><label for="m-well" data-i="lbWell"></label><select id="m-well"></select></div>
             </div>
             <div class="hint" id="maphint"></div>
           </div>
@@ -422,79 +456,59 @@
     </section>
 
     <section>
-      <div class="eyebrow">Plate QC</div>
+      <div class="eyebrow" data-i="eyeQC"></div>
       <div class="panel">
         <div class="plate-head">
           <div class="legend">
-            <span><i class="dot" style="background:#C9DCDB"></i>정상</span>
-            <span><i class="dot" style="background:var(--vic)"></i>rep 산포 큼 (SD &gt; 0.5)</span>
-            <span><i class="dot" style="background:var(--rox)"></i>Ct &gt; 35 · 미검출</span>
-            <span><i class="dot" style="background:#C7CDC9"></i>제외됨</span>
+            <span><i class="dot" style="background:#C9DCDB"></i><span data-i="lgOk"></span></span>
+            <span><i class="dot" style="background:var(--vic)"></i><span data-i="lgHigh"></span></span>
+            <span><i class="dot" style="background:var(--rox)"></i><span data-i="lgBad"></span></span>
+            <span><i class="dot" style="background:#C7CDC9"></i><span data-i="lgOff"></span></span>
           </div>
-          <div class="hint" style="margin:0">웰을 클릭하면 계산에서 빠짐</div>
+          <div class="hint" style="margin:0" data-i="qcTip"></div>
         </div>
         <div class="plate-scroll"><table class="plate" id="plate"></table></div>
         <div class="qcbar">
           <div class="flagnote" id="flagnote"></div>
           <div style="flex:1"></div>
-          <button id="excl-all">경고 웰 전부 제외</button>
-          <button id="incl-all">전부 되돌리기</button>
+          <button id="excl-all" data-i="qcExcl"></button>
+          <button id="incl-all" data-i="qcIncl"></button>
         </div>
       </div>
     </section>
 
     <section>
-      <div class="eyebrow">결과</div>
+      <div class="eyebrow" data-i="eyeRes"></div>
       <div id="alerts"></div>
       <div class="alert caution">
         <div class="ico">!</div>
-        <div class="txt">
-          <b>p값은 스크리닝용입니다</b>
-          여기 3반복은 technical replicate라 생물학적 반복이 아닙니다. n=3에서는 검정력이 매우 낮고
-          정규성 확인도 불가능합니다. 논문·발표에 실을 통계는 독립적으로 반복한 실험으로 확인하세요.
-        </div>
+        <div class="txt"><b data-i="cvT"></b><span data-i="cvB"></span></div>
       </div>
       <div id="genes"></div>
     </section>
 
     <section>
-      <div class="eyebrow">방식 비교</div>
+      <div class="eyebrow" data-i="eyeCmp"></div>
       <div class="panel">
-        <p style="font-size:13.5px;line-height:1.7;margin-bottom:16px">
-          Technical replicate는 서로 교환 가능한 값이라 어떻게 짝지어도 <b>평균은 같습니다</b>.
-          달라지는 건 <b>SD와 p값</b>뿐입니다. Ct를 정렬해서 짝지으면 큰 값끼리·작은 값끼리 묶이면서
-          차이가 상쇄돼 SD가 인위적으로 작아집니다. 아래 표에서 같은 데이터가 방식에 따라
-          얼마나 다르게 보이는지 확인하세요.
-        </p>
+        <p style="font-size:13.5px;line-height:1.7;margin-bottom:16px" data-i="cmpIntro"></p>
         <div style="overflow-x:auto"><table class="cmp" id="cmptbl"></table></div>
-        <div class="hint" style="margin-top:14px;line-height:1.7">
-          <b style="color:var(--ink-2)">pairing 안 함</b>이 통계적으로 가장 방어하기 쉽습니다 —
-          ∆Cp = 각 target replicate − reference의 평균. 짝짓는 순서라는 임의의 선택이 아예 없어지고,
-          SD가 target의 실제 변동을 반영합니다.
-        </div>
+        <div class="hint" style="margin-top:14px;line-height:1.7" data-i="cmpFoot"></div>
       </div>
     </section>
 
     <section>
-      <div class="eyebrow">내보내기</div>
+      <div class="eyebrow" data-i="eyeExp"></div>
       <div class="panel export">
-        <button class="solid" id="dl-xlsx">엑셀로 저장 (수식 + 통계)</button>
-        <button id="dl-csv">Summary CSV</button>
-        <span class="note">그래프는 각 카드의 PNG 버튼으로</span>
+        <button class="solid" id="dl-xlsx" data-i="expXlsx"></button>
+        <button id="dl-csv" data-i="expCsv"></button>
+        <span class="note" data-i="expNote"></span>
       </div>
     </section>
 
     <footer>
-      <b>계산.</b> Reference로 정규화 후 calibrator를 1로 두는 2<sup>−∆∆Ct</sup> (Livak) 방식.
-      Replicate 처리는 세 가지 중 선택 — Ct 정렬 pairing, well 순서 pairing,
-      또는 pairing 없이 각 target replicate에서 reference 평균을 빼는 방식.
-      technical replicate는 교환 가능한 값이라 평균은 셋 다 같고, <b>SD와 p값만 달라집니다.</b>
-      막대 = 정규화값 평균, 오차막대 = 표본표준편차(<code>STDEV</code>, n−1), 점 = 개별 replicate.<br>
-      <b>통계.</b> 검정은 <code>∆Cp</code> 값으로 수행함 — fold-change(2<sup>−∆∆Ct</sup>)는 로그 변환된 값을 지수로 되돌린 것이라
-      분포가 한쪽으로 치우쳐 t-검정 가정에 맞지 않음. 각 군 vs calibrator는 Welch t-검정, 다중비교는 Holm 보정.
-      전체 군간 차이는 일원배치 ANOVA. <code>*</code> p&lt;0.05 · <code>**</code> p&lt;0.01 · <code>***</code> p&lt;0.001.<br>
-      <b>주의.</b> n=3 수준에서는 정규성 검정이 사실상 불가능함. 여기 p값은 스크리닝 지표로 쓰고,
-      논문에 실을 값은 반복 실험(biological replicate)으로 확인할 것.
+      <b data-i="ftCalcT"></b> <span data-i="ftCalc"></span><br>
+      <b data-i="ftStatT"></b> <span data-i="ftStat"></span><br>
+      <b data-i="ftWarnT"></b> <span data-i="ftWarn"></span>
     </footer>
   </div>
 </div>
@@ -511,6 +525,216 @@ const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',
 
 const DEMO=[["A1","CON","GAPDH",15.8979],["A2","CON","GAPDH",15.5161],["A3","CON","GAPDH",15.7701],["A4","Cis 25uM","GAPDH",15.7283],["A5","Cis 25uM","GAPDH",15.4534],["A6","Cis 25uM","GAPDH",15.8493],["A7","Cis 25uM 2","GAPDH",14.7344],["A8","Cis 25uM 2","GAPDH",14.9834],["A9","Cis 25uM 2","GAPDH",15.1665],["A10","ul 10ug/ml","GAPDH",15.0873],["A11","ul 10ug/ml","GAPDH",15.2916],["A12","ul 10ug/ml","GAPDH",15.1541],["B1","CON","MuRF1",21.7651],["B2","CON","MuRF1",22.0916],["B3","CON","MuRF1",21.9247],["B4","Cis 25uM","MuRF1",21.462],["B5","Cis 25uM","MuRF1",21.5372],["B6","Cis 25uM","MuRF1",21.5219],["B7","Cis 25uM 2","MuRF1",20.9268],["B8","Cis 25uM 2","MuRF1",21.1521],["B9","Cis 25uM 2","MuRF1",21.4241],["B10","ul 10ug/ml","MuRF1",21.2265],["B11","ul 10ug/ml","MuRF1",21.3947],["B12","ul 10ug/ml","MuRF1",21.3164],["C1","CON","Atrogin1",23.8942],["C2","CON","Atrogin1",23.6153],["C3","CON","Atrogin1",23.4534],["C4","Cis 25uM","Atrogin1",23.7841],["C5","Cis 25uM","Atrogin1",24.1234],["C6","Cis 25uM","Atrogin1",23.9012],["C7","Cis 25uM 2","Atrogin1",23.1876],["C8","Cis 25uM 2","Atrogin1",23.4521],["C9","Cis 25uM 2","Atrogin1",23.6109],["C10","ul 10ug/ml","Atrogin1",23.8734],["C11","ul 10ug/ml","Atrogin1",23.9521],["C12","ul 10ug/ml","Atrogin1",24.0187],["D1","CON","ERFE",24.6123],["D2","CON","ERFE",24.4517],["D3","CON","ERFE",24.7902],["D4","Cis 25uM","ERFE",35.4231],["D5","Cis 25uM","ERFE",36.1204],["D6","Cis 25uM","ERFE",36.7318],["D7","Cis 25uM 2","ERFE",24.3187],["D8","Cis 25uM 2","ERFE",24.6032],["D9","Cis 25uM 2","ERFE",30.7145],["D10","ul 10ug/ml","ERFE",25.4218],["D11","ul 10ug/ml","ERFE",25.6033],["D12","ul 10ug/ml","ERFE",25.5127],["E1","CON","ID1",20.1234],["E2","CON","ID1",20.3417],["E3","CON","ID1",20.2108],["E4","Cis 25uM","ID1",19.9812],["E5","Cis 25uM","ID1",20.1523],["E6","Cis 25uM","ID1",20.0917],["E7","Cis 25uM 2","ID1",19.0321],["E8","Cis 25uM 2","ID1",19.3104],["E9","Cis 25uM 2","ID1",19.5218],["E10","ul 10ug/ml","ID1",19.3812],["E11","ul 10ug/ml","ID1",19.5027],["E12","ul 10ug/ml","ID1",19.4419]];
 
+
+/* ============ i18n ============ */
+const I18N={
+ko:{
+ title:'ΔΔCt — qPCR 분석기',
+ sub:'qPCR 결과 파일을 상대 발현량으로',
+ eq:'∆Cp = Ct<sub>target</sub> − Ct<sub>ref</sub><span class="ar">→</span>∆∆Cp = ∆Cp − ∆Cp<sub>cal</sub><span class="ar">→</span><b>2<sup>−∆∆Cp</sup></b>',
+ homeTip:'처음으로',
+ dropH:'결과 파일을 여기에 끌어다 놓기',
+ dropP:'QuantStudio · SDS · LightCycler export (.xlsx / .xls / .csv)',
+ dropPriv:'파일은 브라우저 안에서만 처리됨. 어디에도 업로드되지 않음.',
+ demoLead:'파일이 없어도 괜찮음.',
+ demoBtn:'예시 데이터로 먼저 해보기',
+
+ gdEye:'어떤 파일을 올리면 되나',
+ gdIntro:'기기 소프트웨어에서 <b>결과 표를 그대로 내보낸 파일</b>이면 됩니다. 가공하지 말고 export한 원본을 그대로 올리세요. 컬럼 이름이 달라도 <b>세 가지 정보</b>만 들어 있으면 읽습니다.',
+ gdSample:'CON, Cis 25uM …', gdTarget:'GAPDH, MuRF1 …', gdCt:'21.76, 15.89 …',
+ gdWellEx:'선택 — plate 그림용',
+ gdWarnT:'replicate 한 줄씩 그대로 있어야 합니다',
+ gdWarnB:'평균이 미리 계산된 <code>Ct Mean</code> 표는 쓸 수 없습니다. 3반복이면 같은 조합이 3줄로 있어야 SD와 p값이 나옵니다.',
+ gdInstrEye:'기기별로 어디서 내보내나',
+ gdC1:'기기 · 소프트웨어', gdC2:'내보내는 방법', gdC3:'Ct 컬럼',
+ gdI1:'Design &amp; Analysis 또는 QuantStudio SW → <b>Export</b> → Results (.xlsx)',
+ gdI2:'File → Export → <b>Results</b> (.xls / .txt)',
+ gdI3:'Export → <b>Quantification Cq Results</b> (.csv)',
+ gdI4:'Analysis 화면 → 표 우클릭 → <b>Export table</b> (.txt)',
+ gdI5:'Export → <b>Tabular Results</b> (.csv)',
+ gdFoot:'목록에 없는 기기여도 괜찮습니다. 표 형태이기만 하면 올린 뒤 <b>컬럼 매핑</b>에서 어느 열이 무엇인지 직접 지정할 수 있습니다. 시트가 여러 개인 파일도 시트를 골라서 읽습니다.',
+
+ eyeSet:'설정', fileLead:'열린 파일', resetBtn:'처음으로',
+ lbRef:'Reference (housekeeping)', lbCal:'Calibrator (=1 기준군)', lbMode:'Replicate 처리 방식',
+ mSorted:'Ct 정렬 후 pairing', mWell:'well 순서대로 pairing', mNopair:'pairing 안 함 — reference 평균',
+ lbOrder:'그래프 x축 순서 — 칩을 끌어서 바꾸기',
+ mapSum:'컬럼 매핑 — 기기·소프트웨어마다 헤더가 다를 때',
+ lbSheet:'시트', lbHdr:'헤더 행', lbSmp:'Sample (실험군)', lbTgt:'Target (유전자)',
+ lbCt:'Ct / Cq / Cp', lbWell:'Well (선택)',
+ mapAuto:'자동으로 인식됨. 값이 이상하면 여기서 직접 지정하세요.',
+ mapFail:'자동 인식에 실패했습니다. 어느 컬럼이 실험군 / 유전자 / Ct인지 직접 골라주세요.',
+ colNone:'— 없음 —', colN:n=>`(${n}열)`, rowN:n=>`${n}행`,
+
+ eyeQC:'Plate QC',
+ lgOk:'정상', lgHigh:'rep 산포 큼 (SD > 0.5)', lgBad:'Ct > 35 · 미검출', lgOff:'제외됨',
+ qcTip:'웰을 클릭하면 계산에서 빠짐',
+ qcExcl:'경고 웰 전부 제외', qcIncl:'전부 되돌리기',
+ qcNone:'경고 웰 없음',
+ qcOffOnly:n=>`${n}개 웰 제외 중 · 남은 웰에 경고 없음`,
+ qcLate:n=>`Ct>35 또는 미검출 ${n}개`, qcHigh:n=>`rep 산포 큼 ${n}개`,
+ qcTail:' — 증폭 실패나 primer-dimer일 수 있음. 웰을 눌러 제외.',
+ excluded:'(제외됨)',
+
+ eyeRes:'결과',
+ cvT:'p값은 스크리닝용입니다',
+ cvB:'여기 3반복은 technical replicate라 생물학적 반복이 아닙니다. n=3에서는 검정력이 매우 낮고 정규성 확인도 불가능합니다. 논문·발표에 실을 통계는 독립적으로 반복한 실험으로 확인하세요.',
+ alLateT:n=>`증폭이 실패했을 수 있는 웰이 ${n}개 있습니다`,
+ alLateB:'Ct가 35를 넘거나 검출되지 않았습니다. 실제 발현 감소가 아니라 primer-dimer나 반응 실패일 가능성이 큽니다. 아래 결과에 그대로 반영되어 있으니, 제외할지 판단하세요.',
+ alLateBtn:'해당 웰 제외',
+ alHighT:n=>`replicate 산포가 큰 조합이 ${n}개 있습니다`,
+ alHighB:'같은 조건인데 Ct가 0.5 이상 벌어졌습니다. 피펫팅 오차나 outlier 웰일 수 있습니다.',
+ alOffT:n=>`${n}개 웰을 제외하고 계산했습니다`,
+ alOffB:'남은 웰에는 경고가 없습니다. 제외한 웰은 논문에 쓸 때 반드시 기록하세요.',
+
+ thGroup:'Group', thNorm:'Norm.', thSD:'SD', thP:'p (Holm)', thN:'n',
+ refBase:'기준',
+ anovaOk:(f,d1,d2,p,sig)=>`ANOVA  F(${d1}, ${d2}) = <b>${f}</b>   p = <b>${p}</b>${sig?'  → 군간 차이 있음':'  → 군간 차이 없음'}`,
+ anovaNo:'ANOVA — replicate가 부족해 계산 불가',
+ noCal:c=>`Calibrator(${c})에 남은 replicate가 없습니다.`,
+ noTgt:'Reference 외에 분석할 유전자가 없습니다.',
+ traceSum:'계산 과정 펼치기 — replicate 하나하나 어떻게 나왔는지',
+ trRep:'rep', trMeanCt:r=>`평균 Ct ${r}`, trCt:r=>`Ct ${r}`,
+ trNoRep:'남은 replicate 없음',
+ tr1Nopair:(t,r)=>`① ∆Cp = Ct<sub>${t}</sub> − <b>${r}의 평균</b> (짝짓지 않음)`,
+ tr1Sorted:(t,r)=>`① ∆Cp = Ct<sub>${t}</sub> − Ct<sub>${r}</sub> (그룹 내에서 각각 <b>오름차순 정렬</b> 후 같은 순위끼리)`,
+ tr1Well:(t,r)=>`① ∆Cp = Ct<sub>${t}</sub> − Ct<sub>${r}</sub> (<b>well 순서</b>대로 같은 행끼리)`,
+ tr2:(v,c)=>`② ∆∆Cp = ∆Cp − <b>${v}</b> &nbsp;(= ${c}의 ∆Cp 평균)`,
+ tr3:(v,c)=>`③ Normalized = 2^(−∆∆Cp) ÷ <b>${v}</b> &nbsp;(= ${c}의 2^(−∆∆Cp) 평균) → ${c}이 정확히 1`,
+
+ eyeCmp:'방식 비교',
+ cmpIntro:'Technical replicate는 서로 교환 가능한 값이라 어떻게 짝지어도 <b>평균은 같습니다</b>. 달라지는 건 <b>SD와 p값</b>뿐입니다. Ct를 정렬해서 짝지으면 큰 값끼리·작은 값끼리 묶이면서 차이가 상쇄돼 SD가 인위적으로 작아집니다. 아래 표에서 같은 데이터가 방식에 따라 얼마나 다르게 보이는지 확인하세요.',
+ cmpFoot:'<b>pairing 안 함</b>이 통계적으로 가장 방어하기 쉽습니다 — ∆Cp = 각 target replicate − reference의 평균. 짝짓는 순서라는 임의의 선택이 아예 없어지고, SD가 target의 실제 변동을 반영합니다.',
+ cmpC1:'유전자', cmpC2:'방식', cmpC3:'Norm. 평균 범위', cmpC4:'평균 SD', cmpC5:'ANOVA p', cmpC6:'유의한 군',
+ cmpSel:' ·  선택됨',
+ cmpM1:'Ct 정렬 pairing', cmpM2:'well 순서 pairing', cmpM3:'pairing 안 함',
+
+ eyeExp:'내보내기',
+ expXlsx:'엑셀로 저장 (수식 + 통계)', expCsv:'Summary CSV',
+ expNote:'그래프는 각 카드의 PNG 버튼으로',
+
+ ftCalcT:'계산.',
+ ftCalc:'Reference로 정규화 후 calibrator를 1로 두는 2<sup>−∆∆Ct</sup> (Livak) 방식. Replicate 처리는 세 가지 중 선택 — Ct 정렬 pairing, well 순서 pairing, 또는 pairing 없이 각 target replicate에서 reference 평균을 빼는 방식. technical replicate는 교환 가능한 값이라 평균은 셋 다 같고, <b>SD와 p값만 달라집니다.</b> 막대 = 정규화값 평균, 오차막대 = 표본표준편차(<code>STDEV</code>, n−1), 점 = 개별 replicate.',
+ ftStatT:'통계.',
+ ftStat:'검정은 <code>∆Cp</code> 값으로 수행함 — fold-change(2<sup>−∆∆Ct</sup>)는 로그 변환된 값을 지수로 되돌린 것이라 분포가 한쪽으로 치우쳐 t-검정 가정에 맞지 않음. 각 군 vs calibrator는 Welch t-검정, 다중비교는 Holm 보정. 전체 군간 차이는 일원배치 ANOVA. <code>*</code> p&lt;0.05 · <code>**</code> p&lt;0.01 · <code>***</code> p&lt;0.001.',
+ ftWarnT:'주의.',
+ ftWarn:'n=3 수준에서는 정규성 검정이 사실상 불가능함. 여기 p값은 스크리닝 지표로 쓰고, 논문에 실을 값은 반복 실험(biological replicate)으로 확인할 것.',
+
+ errRead:'파일을 읽지 못했습니다. .xlsx / .xls / .csv 인지 확인하세요.',
+ errSheet:'시트가 없습니다.',
+ errEmpty:'비어 있는 시트입니다. 다른 시트를 골라보세요.',
+ errRows:'데이터 행을 읽지 못했습니다. 위의 <b>컬럼 매핑</b>에서 시트·헤더 행·컬럼을 확인하세요.',
+ errRetry:'클릭해서 다시 시도',
+ demoName:'예시 데이터',
+ chartY:'Relative mRNA level', chartX:'Group',
+ chartTitle:(t,r,c)=>`${t} — ΔΔCt`,
+ xlNote:'검정은 ∆Cp 값으로 수행 (Welch t-test, Holm 보정)',
+ xlSummary:'Summary', xlSig:'sig',
+},
+en:{
+ title:'ΔΔCt — qPCR analyzer',
+ sub:'From instrument export to relative expression',
+ eq:'∆Cp = Ct<sub>target</sub> − Ct<sub>ref</sub><span class="ar">→</span>∆∆Cp = ∆Cp − ∆Cp<sub>cal</sub><span class="ar">→</span><b>2<sup>−∆∆Cp</sup></b>',
+ homeTip:'Start over',
+ dropH:'Drop your results file here',
+ dropP:'QuantStudio · SDS · LightCycler export (.xlsx / .xls / .csv)',
+ dropPriv:'Everything runs in your browser. Nothing is uploaded anywhere.',
+ demoLead:"Don't have a file handy?",
+ demoBtn:'Try it with example data',
+
+ gdEye:'What file should I upload?',
+ gdIntro:'Use the <b>results table exported straight from your instrument software</b>. Upload the raw export — no need to clean it up first. Column names can differ; it only needs <b>three pieces of information</b>.',
+ gdSample:'CON, Cis 25uM …', gdTarget:'GAPDH, MuRF1 …', gdCt:'21.76, 15.89 …',
+ gdWellEx:'optional — for the plate map',
+ gdWarnT:'Replicates must be present as individual rows',
+ gdWarnB:'A pre-averaged <code>Ct Mean</code> table will not work. With 3 replicates, the same combination needs to appear on 3 separate rows for SD and p-values to be computable.',
+ gdInstrEye:'Where to export from',
+ gdC1:'Instrument · software', gdC2:'How to export', gdC3:'Ct column',
+ gdI1:'Design &amp; Analysis or QuantStudio SW → <b>Export</b> → Results (.xlsx)',
+ gdI2:'File → Export → <b>Results</b> (.xls / .txt)',
+ gdI3:'Export → <b>Quantification Cq Results</b> (.csv)',
+ gdI4:'Analysis view → right-click the table → <b>Export table</b> (.txt)',
+ gdI5:'Export → <b>Tabular Results</b> (.csv)',
+ gdFoot:'Not on this list? Still fine. As long as it is a table, upload it and use <b>Column mapping</b> to tell the app which column is which. Files with multiple sheets are handled too — you can pick the sheet.',
+
+ eyeSet:'Settings', fileLead:'Open file', resetBtn:'Start over',
+ lbRef:'Reference (housekeeping)', lbCal:'Calibrator (set to 1)', lbMode:'Replicate handling',
+ mSorted:'Pair after sorting Ct', mWell:'Pair by well order', mNopair:'No pairing — use reference mean',
+ lbOrder:'X-axis order — drag the chips',
+ mapSum:'Column mapping — when headers differ by instrument',
+ lbSheet:'Sheet', lbHdr:'Header row', lbSmp:'Sample (group)', lbTgt:'Target (gene)',
+ lbCt:'Ct / Cq / Cp', lbWell:'Well (optional)',
+ mapAuto:'Detected automatically. If something looks off, set it here.',
+ mapFail:'Automatic detection failed. Please pick which column holds the sample, target, and Ct.',
+ colNone:'— none —', colN:n=>`(column ${n})`, rowN:n=>`row ${n}`,
+
+ eyeQC:'Plate QC',
+ lgOk:'OK', lgHigh:'High replicate spread (SD > 0.5)', lgBad:'Ct > 35 · undetermined', lgOff:'Excluded',
+ qcTip:'Click a well to drop it from the calculation',
+ qcExcl:'Exclude all flagged wells', qcIncl:'Restore all',
+ qcNone:'No flagged wells',
+ qcOffOnly:n=>`${n} well${n>1?'s':''} excluded · no flags among the rest`,
+ qcLate:n=>`${n} with Ct>35 or undetermined`, qcHigh:n=>`${n} with high replicate spread`,
+ qcTail:' — could be a failed reaction or primer-dimer. Click a well to exclude it.',
+ excluded:'(excluded)',
+
+ eyeRes:'Results',
+ cvT:'These p-values are for screening only',
+ cvB:'These 3 replicates are technical, not biological. At n=3 the statistical power is very low and normality cannot be assessed. Confirm any statistics you intend to publish with independently repeated experiments.',
+ alLateT:n=>`${n} well${n>1?'s':''} may have failed to amplify`,
+ alLateB:'Ct exceeded 35 or nothing was detected. This is more likely a primer-dimer or a failed reaction than a real drop in expression. It is currently included in the results below — decide whether to exclude it.',
+ alLateBtn:'Exclude those wells',
+ alHighT:n=>`${n} combination${n>1?'s':''} with high replicate spread`,
+ alHighB:'Ct values differ by more than 0.5 within the same condition. Could be pipetting error or an outlier well.',
+ alOffT:n=>`Calculated with ${n} well${n>1?'s':''} excluded`,
+ alOffB:'No flags remain among the included wells. Always report which wells you excluded.',
+
+ thGroup:'Group', thNorm:'Norm.', thSD:'SD', thP:'p (Holm)', thN:'n',
+ refBase:'ref',
+ anovaOk:(f,d1,d2,p,sig)=>`ANOVA  F(${d1}, ${d2}) = <b>${f}</b>   p = <b>${p}</b>${sig?'  → groups differ':'  → no difference between groups'}`,
+ anovaNo:'ANOVA — not enough replicates',
+ noCal:c=>`No replicates remain in the calibrator (${c}).`,
+ noTgt:'No target genes besides the reference.',
+ traceSum:'Show the calculation — replicate by replicate',
+ trRep:'rep', trMeanCt:r=>`mean Ct ${r}`, trCt:r=>`Ct ${r}`,
+ trNoRep:'no replicates left',
+ tr1Nopair:(t,r)=>`① ∆Cp = Ct<sub>${t}</sub> − <b>mean of ${r}</b> (no pairing)`,
+ tr1Sorted:(t,r)=>`① ∆Cp = Ct<sub>${t}</sub> − Ct<sub>${r}</sub> (each <b>sorted ascending</b> within the group, then matched by rank)`,
+ tr1Well:(t,r)=>`① ∆Cp = Ct<sub>${t}</sub> − Ct<sub>${r}</sub> (matched by <b>well order</b>)`,
+ tr2:(v,c)=>`② ∆∆Cp = ∆Cp − <b>${v}</b> &nbsp;(= mean ∆Cp of ${c})`,
+ tr3:(v,c)=>`③ Normalized = 2^(−∆∆Cp) ÷ <b>${v}</b> &nbsp;(= mean 2^(−∆∆Cp) of ${c}) → ${c} becomes exactly 1`,
+
+ eyeCmp:'Method comparison',
+ cmpIntro:'Technical replicates are exchangeable, so however you pair them the <b>means come out identical</b>. Only the <b>SD and p-values</b> change. Sorting Ct before pairing matches high with high and low with low, cancelling the variation and shrinking the SD artificially. The table below shows how differently the same data can read.',
+ cmpFoot:'<b>No pairing</b> is the easiest to defend statistically — ∆Cp = each target replicate minus the mean of the reference. The arbitrary choice of matching order disappears entirely, and the SD reflects the real variation in the target.',
+ cmpC1:'Gene', cmpC2:'Method', cmpC3:'Norm. mean range', cmpC4:'Mean SD', cmpC5:'ANOVA p', cmpC6:'Significant',
+ cmpSel:' ·  selected',
+ cmpM1:'Sorted pairing', cmpM2:'Well-order pairing', cmpM3:'No pairing',
+
+ eyeExp:'Export',
+ expXlsx:'Download Excel (formulas + stats)', expCsv:'Summary CSV',
+ expNote:'Charts export via the PNG button on each card',
+
+ ftCalcT:'Calculation.',
+ ftCalc:'Standard 2<sup>−∆∆Ct</sup> (Livak): normalize to the reference, then set the calibrator to 1. Replicates can be handled three ways — pair after sorting Ct, pair by well order, or skip pairing and subtract the reference mean from each target replicate. Technical replicates are exchangeable, so all three give the same mean; <b>only the SD and p-values differ.</b> Bars = mean normalized value, error bars = sample SD (<code>STDEV</code>, n−1), dots = individual replicates.',
+ ftStatT:'Statistics.',
+ ftStat:'Tests are run on <code>∆Cp</code> values — fold-change (2<sup>−∆∆Ct</sup>) is a log-scale quantity exponentiated back, so its distribution is skewed and violates t-test assumptions. Each group vs the calibrator uses Welch’s t-test with Holm correction for multiple comparisons; overall group differences use one-way ANOVA. <code>*</code> p&lt;0.05 · <code>**</code> p&lt;0.01 · <code>***</code> p&lt;0.001.',
+ ftWarnT:'Caution.',
+ ftWarn:'At n=3, normality cannot meaningfully be tested. Treat these p-values as a screening signal and confirm anything you publish with biological replicates.',
+
+ errRead:'Could not read the file. Please check that it is .xlsx / .xls / .csv.',
+ errSheet:'No sheets found.',
+ errEmpty:'This sheet is empty. Try another sheet.',
+ errRows:'No data rows found. Check the sheet, header row, and columns under <b>Column mapping</b> above.',
+ errRetry:'Click to try again',
+ demoName:'Example data',
+ chartY:'Relative mRNA level', chartX:'Group',
+ chartTitle:(t,r,c)=>`${t} — ΔΔCt`,
+ xlNote:'Tests performed on ∆Cp values (Welch t-test, Holm correction)',
+ xlSummary:'Summary', xlSig:'sig',
+}
+};
+let LANG = (navigator.language||'en').toLowerCase().startsWith('ko') ? 'ko' : 'en';
+const T=(k,...a)=>{ const v=I18N[LANG][k]; return typeof v==='function'? v(...a) : v; };
 
 /* ============ 커스텀 드롭다운 ============
    네이티브 <select>는 값의 원천으로 그대로 두고, 화면에만 커스텀 UI를 씌운다.
@@ -591,6 +815,33 @@ function redraw(sel){
 document.addEventListener('click',()=>document.querySelectorAll('.sel.open').forEach(b=>b._close&&b._close()));
 document.addEventListener('keydown',e=>{ if(e.key==='Escape')
   document.querySelectorAll('.sel.open').forEach(b=>b._close&&b._close()); });
+
+/** 정적 텍스트를 현재 언어로 칠한다 */
+function applyLang(){
+  document.documentElement.lang=LANG;
+  document.title=T('title');
+  document.querySelectorAll('[data-i]').forEach(el=>{
+    const v=T(el.dataset.i);
+    if(typeof v==='string') el.innerHTML=v;
+  });
+  document.querySelectorAll('[data-i-title]').forEach(el=>{
+    el.title=T(el.dataset.iTitle);
+  });
+  document.querySelectorAll('.lang button').forEach(b=>
+    b.setAttribute('aria-pressed', String(b.dataset.lang===LANG)));
+  // 이미 그려진 커스텀 드롭다운도 다시 칠한다
+  document.querySelectorAll('select[data-enh]').forEach(sel=>redraw(sel));
+}
+function setLang(l){
+  if(l===LANG) return;
+  const wasDemo = FNAME===T('demoName');
+  LANG=l;
+  if(wasDemo) FNAME=T('demoName');
+  applyLang();
+  if(RAW.length){ if(FNAME) document.getElementById('fname').textContent=FNAME; render(); }
+}
+document.querySelectorAll('.lang button').forEach(b=>{ b.onclick=()=>setLang(b.dataset.lang); });
+applyLang();
 
 function enhanceAll(){
   ['ref','cal','pairmode','m-sheet','m-hdr','m-smp','m-tgt','m-ct','m-well']
@@ -684,7 +935,7 @@ drop.ondrop=e=>{e.preventDefault();drop.classList.remove('over');if(e.dataTransf
 fileIn.onchange=e=>{if(e.target.files[0])read(e.target.files[0]);};
 document.getElementById('demo').onclick=()=>{
   ROWS=[['Well Position','Sample Name','Target Name','CT'],...DEMO];
-  MAP={hdr:0,smp:1,tgt:2,ct:3,well:0}; FNAME='예시 데이터'; WB=null;
+  MAP={hdr:0,smp:1,tgt:2,ct:3,well:0}; FNAME=T('demoName'); WB=null;
   document.getElementById('sheetfield').style.display='none';
   buildMapUI(true); ingest();
 };
@@ -708,8 +959,8 @@ function read(file){
   const fr=new FileReader();
   fr.onload=ev=>{
     try{ WB=XLSX.read(new Uint8Array(ev.target.result),{type:'array'}); }
-    catch(e){ return fail('파일을 읽지 못했습니다. .xlsx / .xls / .csv 인지 확인하세요.'); }
-    if(!WB.SheetNames.length) return fail('시트가 없습니다.');
+    catch(e){ return fail(T('errRead')); }
+    if(!WB.SheetNames.length) return fail(T('errSheet'));
     const best=pickSheet();          // Sample/Target/Ct 가 있는 시트를 우선 선택
     loadSheet(best, true);
   };
@@ -735,7 +986,7 @@ function pickSheet(){
 function loadSheet(name, auto){
   ROWS=XLSX.utils.sheet_to_json(WB.Sheets[name],{header:1,defval:null,raw:true});
   if(!ROWS.length){ document.getElementById('genes').innerHTML=
-    '<div class="panel"><div class="flagnote">비어 있는 시트입니다. 다른 시트를 골라보세요.</div></div>'; }
+    `<div class="panel"><div class="flagnote">${T('errEmpty')}</div></div>`; }
   if(auto) autoMap();
   buildSheetUI(name);
   buildMapUI(MAP.hdr>=0 && MAP.smp>=0 && MAP.tgt>=0 && MAP.ct>=0);
@@ -752,7 +1003,7 @@ function buildSheetUI(cur){
 }
 function fail(msg){
   document.getElementById('drop').innerHTML=
-    '<h2 style="color:var(--rox)">'+esc(msg)+'</h2><p>클릭해서 다시 시도</p>';
+    '<h2 style="color:var(--rox)">'+msg+'</h2><p>'+T('errRetry')+'</p>';
   document.getElementById('drop').onclick=()=>location.reload();
 }
 const norm=s=>String(s??'').trim().toLowerCase().replace(/[\s_.\-()]/g,'');
@@ -790,7 +1041,7 @@ function buildMapUI(autoOK){
     const preview=(ROWS[i]||[]).slice(0,5).map(v=>v==null?'':String(v)).join(' | ').slice(0,46);
     if(!preview.trim()) continue;
     hdrSel.insertAdjacentHTML('beforeend',
-      `<option value="${i}">${i+1}행 — ${esc(preview)}</option>`);
+      `<option value="${i}">${T('rowN',i+1)} — ${esc(preview)}</option>`);
   }
   hdrSel.value=MAP.hdr;
   enhance(hdrSel);
@@ -809,20 +1060,20 @@ function buildMapUI(autoOK){
   const hint=document.getElementById('maphint');
   if(autoOK){
     box.open=false;
-    hint.textContent='자동으로 인식됨. 값이 이상하면 여기서 직접 지정하세요.';
+    hint.textContent=T('mapAuto');
   }else{
     box.open=true;
-    hint.textContent='자동 인식에 실패했습니다. 어느 컬럼이 실험군 / 유전자 / Ct인지 직접 골라주세요.';
+    hint.textContent=T('mapFail');
   }
 }
 function fillColSelects(){
   const hdr=(ROWS[MAP.hdr]||[]);
   const ncol=Math.max(hdr.length, ...ROWS.slice(MAP.hdr,MAP.hdr+12).map(r=>(r||[]).length));
   const opts=(withNone)=>{
-    let s = withNone ? '<option value="-1">— 없음 —</option>' : '';
+    let s = withNone ? `<option value="-1">${T('colNone')}</option>` : '';
     for(let j=0;j<ncol;j++){
       const nm=hdr[j]==null||String(hdr[j]).trim()===''
-        ? `(${String.fromCharCode(65+(j%26))}열)` : String(hdr[j]).trim();
+        ? T('colN', String.fromCharCode(65+(j%26))) : String(hdr[j]).trim();
       s+=`<option value="${j}">${esc(nm)}</option>`;
     }
     return s;
@@ -859,7 +1110,7 @@ function ingest(){
     document.getElementById('app').classList.remove('hidden');
     document.getElementById('landing').classList.add('hidden');
     document.getElementById('genes').innerHTML=
-      '<div class="panel"><div class="flagnote">데이터 행을 읽지 못했습니다. 위의 <b>컬럼 매핑</b>에서 시트·헤더 행·컬럼을 확인하세요.</div></div>';
+      `<div class="panel"><div class="flagnote">${T('errRows')}</div></div>`;
     document.getElementById('plate').innerHTML='';
     document.getElementById('mapbox').open=true;
     return;
@@ -949,16 +1200,17 @@ function compute(mode){
 /* ============ 렌더 ============ */
 function render(){ renderChips(); renderPlate(); renderGenes(); renderAlerts(); renderCompare(); }
 
-const MODES=[['sorted','Ct 정렬 pairing'],['well','well 순서 pairing'],['nopair','pairing 안 함']];
+const MODES=()=>[['sorted',T('cmpM1')],['well',T('cmpM2')],['nopair',T('cmpM3')]];
 function renderCompare(){
   const cur=document.getElementById('pairmode').value;
   const cal=document.getElementById('cal').value;
-  const runs={}; MODES.forEach(([m])=>runs[m]=compute(m).res);
+  const MS=MODES();
+  const runs={}; MS.forEach(([m])=>runs[m]=compute(m).res);
   const genes=runs[cur].filter(g=>g.ok).map(g=>g.target);
-  let h=`<thead><tr><th>유전자</th><th>방식</th><th>Norm. 평균 범위</th><th>평균 SD</th>
-    <th>ANOVA p</th><th>유의한 군</th></tr></thead><tbody>`;
+  let h=`<thead><tr><th>${T('cmpC1')}</th><th>${T('cmpC2')}</th><th>${T('cmpC3')}</th><th>${T('cmpC4')}</th>
+    <th>${T('cmpC5')}</th><th>${T('cmpC6')}</th></tr></thead><tbody>`;
   genes.forEach((tgt,gi)=>{
-    MODES.forEach(([m,lbl],mi)=>{
+    MS.forEach(([m,lbl],mi)=>{
       const g=runs[m].find(x=>x.target===tgt);
       if(!g||!g.ok) return;
       const bl=g.blocks.filter(b=>b.n);
@@ -967,7 +1219,7 @@ function renderCompare(){
       const nsig=bl.filter(b=>b.group!==cal&&isFinite(b.padj)&&b.padj<0.05).length;
       const isCur=m===cur;
       // 가장 작은 평균 SD면 빨간색 (= 과소평가 신호)
-      const allSd=MODES.map(([mm])=>{
+      const allSd=MS.map(([mm])=>{
         const gg=runs[mm].find(x=>x.target===tgt);
         if(!gg||!gg.ok) return NaN;
         const ss=gg.blocks.filter(b=>b.n&&isFinite(b.sd)).map(b=>b.sd);
@@ -976,7 +1228,7 @@ function renderCompare(){
       const isMin=allSd.length>1 && Math.abs(avgSd-Math.min(...allSd))<1e-9;
       h+=`<tr class="${mi===0&&gi?'gsep':''}">
         <td>${mi===0?esc(tgt):''}</td>
-        <td class="mode ${isCur?'cur':''}">${lbl}${isCur?' ·  선택됨':''}</td>
+        <td class="mode ${isCur?'cur':''}">${lbl}${isCur?T('cmpSel'):''}</td>
         <td>${F(Math.min(...means),3)} – ${F(Math.max(...means),3)}</td>
         <td class="${isMin?'low':''}">${F(avgSd,4)}</td>
         <td>${pTxt(g.anova.p)}</td>
@@ -997,26 +1249,22 @@ function renderAlerts(){
     const combos=[...new Set(L.map(r=>r.sample+' · '+r.target))];
     h+=`<div class="alert danger">
       <div class="ico">!</div>
-      <div class="txt"><b>증폭이 실패했을 수 있는 웰이 ${L.length}개 있습니다</b>
-        Ct가 35를 넘거나 검출되지 않았습니다. 실제 발현 감소가 아니라 primer-dimer나 반응 실패일 가능성이 큽니다.
-        아래 결과에 그대로 반영되어 있으니, 제외할지 판단하세요.<br>
+      <div class="txt"><b>${T('alLateT',L.length)}</b>${T('alLateB')}<br>
         <span style="font-family:'Spline Sans Mono',monospace;font-size:12px;opacity:.85">${combos.slice(0,6).map(esc).join(' / ')}${combos.length>6?' …':''}</span>
       </div>
-      <button class="act" id="a-late">해당 웰 제외</button></div>`;
+      <button class="act" id="a-late">${T('alLateBtn')}</button></div>`;
   }
   if(H.length){
     const combos=[...new Set(H.map(r=>r.sample+' · '+r.target))];
     h+=`<div class="alert caution">
       <div class="ico">!</div>
-      <div class="txt"><b>replicate 산포가 큰 조합이 ${combos.length}개 있습니다</b>
-        같은 조건인데 Ct가 0.5 이상 벌어졌습니다. 피펫팅 오차나 outlier 웰일 수 있습니다.<br>
+      <div class="txt"><b>${T('alHighT',combos.length)}</b>${T('alHighB')}<br>
         <span style="font-family:'Spline Sans Mono',monospace;font-size:12px;opacity:.85">${combos.slice(0,6).map(esc).join(' / ')}${combos.length>6?' …':''}</span>
       </div></div>`;
   }
   if(!L.length && !H.length && EXCLUDED.size){
     h+=`<div class="alert calm"><div class="ico">✓</div>
-      <div class="txt"><b>${EXCLUDED.size}개 웰을 제외하고 계산했습니다</b>
-        남은 웰에는 경고가 없습니다. 제외한 웰은 논문에 쓸 때 반드시 기록하세요.</div></div>`;
+      <div class="txt"><b>${T('alOffT',EXCLUDED.size)}</b>${T('alOffB')}</div></div>`;
   }
   box.innerHTML=h;
   const b=document.getElementById('a-late');
@@ -1064,7 +1312,7 @@ function renderPlate(){
       const cls=off?'off':late.has(r.key)?'bad':high.has(r.key)?'warn':'ok';
       const ctTxt=r.undet?'N/D':r.ct.toFixed(2);
       h+=`<td class="well ${cls}" data-k="${r.key}" tabindex="0" role="checkbox" aria-checked="${!off}"
-            title="${esc(r.sample+' · '+r.target+' · '+ctTxt+(off?' (제외됨)':''))}">
+            title="${esc(r.sample+' · '+r.target+' · '+ctTxt+(off?' '+T('excluded'):''))}">
             <div class="ct">${ctTxt}</div><div class="tg">${esc(r.target)}</div></td>`;
     }
     h+='</tr>';
@@ -1080,11 +1328,11 @@ function renderPlate(){
   const note=document.getElementById('flagnote');
   if(!nL&&!nH){
     note.className='flagnote none';
-    note.textContent=EXCLUDED.size?`${EXCLUDED.size}개 웰 제외 중 · 남은 웰에 경고 없음`:'경고 웰 없음';
+    note.textContent=EXCLUDED.size?T('qcOffOnly',EXCLUDED.size):T('qcNone');
   }else{
     note.className='flagnote';
-    const p=[]; if(nL)p.push(`Ct>35 또는 미검출 ${nL}개`); if(nH)p.push(`rep 산포 큼 ${nH}개`);
-    note.textContent=p.join(' · ')+' — 증폭 실패나 primer-dimer일 수 있음. 웰을 눌러 제외.';
+    const p=[]; if(nL)p.push(T('qcLate',nL)); if(nH)p.push(T('qcHigh',nH));
+    note.textContent=p.join(' · ')+T('qcTail');
   }
   document.getElementById('excl-all').onclick=()=>{
     const f=flags(); f.late.forEach(k=>EXCLUDED.add(k)); f.high.forEach(k=>EXCLUDED.add(k)); render();};
@@ -1096,14 +1344,14 @@ function renderGenes(){
   const {res,ref,cal}=compute();
   const box=document.getElementById('genes');
   if(!res.length){
-    box.innerHTML='<div class="panel"><div class="hint">Reference 외에 분석할 유전자가 없습니다.</div></div>'; return;
+    box.innerHTML=`<div class="panel"><div class="hint">${T('noTgt')}</div></div>`; return;
   }
   box.innerHTML=res.map((g,i)=>{
     if(!g.ok) return `<div class="panel gene"><div class="gene-head"><h3>${esc(g.target)}</h3></div>
-      <div class="flagnote">Calibrator(${esc(cal)})에 남은 replicate가 없습니다.</div></div>`;
+      <div class="flagnote">${T('noCal',esc(cal))}</div></div>`;
     const rows=g.blocks.map(b=>{
       const isCal=b.group===cal;
-      const sg = isCal ? '<span class="ns">기준</span>'
+      const sg = isCal ? `<span class="ns">${T('refBase')}</span>`
         : b.n>=2 ? `<span class="${isFinite(b.padj)&&b.padj<0.05?'star':'ns'}">${stars(b.padj)}</span>` : '<span class="ns">—</span>';
       return `<tr class="${isCal?'calrow':''}">
         <td>${esc(b.group)}</td>
@@ -1116,8 +1364,8 @@ function renderGenes(){
     }).join('');
     const a=g.anova;
     const anovaTxt = isFinite(a.p)
-      ? `ANOVA  F(${a.df1}, ${a.df2}) = <b>${a.F.toFixed(3)}</b>   p = <b>${pTxt(a.p)}</b>${a.p<0.05?'  → 군간 차이 있음':'  → 군간 차이 없음'}`
-      : 'ANOVA — replicate가 부족해 계산 불가';
+      ? T('anovaOk', a.F.toFixed(3), a.df1, a.df2, pTxt(a.p), a.p<0.05)
+      : T('anovaNo');
     return `<div class="panel gene">
       <div class="gene-head">
         <h3>${esc(g.target)}</h3>
@@ -1131,12 +1379,12 @@ function renderGenes(){
           <div class="anova">${anovaTxt}</div>
         </div>
         <table class="data">
-          <thead><tr><th>Group</th><th>∆Cp</th><th>Norm.</th><th>SD</th><th>p (Holm)</th><th></th><th>n</th></tr></thead>
+          <thead><tr><th>${T('thGroup')}</th><th>∆Cp</th><th>${T('thNorm')}</th><th>${T('thSD')}</th><th>${T('thP')}</th><th></th><th>${T('thN')}</th></tr></thead>
           <tbody>${rows}</tbody>
         </table>
       </div>
       <details class="trace">
-        <summary>계산 과정 펼치기 — replicate 하나하나 어떻게 나왔는지</summary>
+        <summary>${T('traceSum')}</summary>
         ${trace(g,cal,ref)}
       </details>
     </div>`;
@@ -1150,11 +1398,11 @@ function renderGenes(){
 
 function trace(g,cal,ref){
   let h=`<table class="tracetbl"><thead><tr>
-    <th>Group</th><th>rep</th><th>Ct ${esc(g.target)}</th><th>${g.blocks.find(b=>b.n&&b.reps[0].refIsMean)?'평균 Ct '+esc(ref):'Ct '+esc(ref)}</th>
+    <th>${T('thGroup')}</th><th>${T('trRep')}</th><th>${T('trCt',esc(g.target))}</th><th>${g.blocks.find(b=>b.n&&b.reps[0].refIsMean)?T('trMeanCt',esc(ref)):T('trCt',esc(ref))}</th>
     <th>∆Cp</th><th>∆∆Cp</th><th>2^(−∆∆Cp)</th><th>Normalized</th></tr></thead><tbody>`;
   g.blocks.forEach((b,bi)=>{
     if(!b.n){ h+=`<tr class="${bi?'gsep':''}"><td class="gname">${esc(b.group)}</td>
-      <td colspan="7" class="calc">남은 replicate 없음</td></tr>`; return; }
+      <td colspan="7" class="calc">${T('trNoRep')}</td></tr>`; return; }
     b.reps.forEach((r,i)=>{
       h+=`<tr class="${i===0&&bi?'gsep':''}">
         <td class="gname">${i===0?esc(b.group)+(b.group===cal?' <span class="calc">(cal)</span>':''):''}</td>
@@ -1165,16 +1413,14 @@ function trace(g,cal,ref){
     });
   });
   const md=document.getElementById('pairmode').value;
-  const step1 = md==='nopair'
-    ? `① ∆Cp = Ct<sub>${esc(g.target)}</sub> − <b>${esc(ref)}의 평균</b> (짝짓지 않음)`
-    : md==='sorted'
-      ? `① ∆Cp = Ct<sub>${esc(g.target)}</sub> − Ct<sub>${esc(ref)}</sub> (그룹 내에서 각각 <b>오름차순 정렬</b> 후 같은 순위끼리)`
-      : `① ∆Cp = Ct<sub>${esc(g.target)}</sub> − Ct<sub>${esc(ref)}</sub> (<b>well 순서</b>대로 같은 행끼리)`;
+  const step1 = md==='nopair' ? T('tr1Nopair',esc(g.target),esc(ref))
+    : md==='sorted' ? T('tr1Sorted',esc(g.target),esc(ref))
+    : T('tr1Well',esc(g.target),esc(ref));
   h+=`</tbody></table>
   <div class="hint" style="margin-top:11px;line-height:1.8">
     ${step1}<br>
-    ② ∆∆Cp = ∆Cp − <b>${g.calDcp.toFixed(4)}</b> &nbsp;(= ${esc(cal)}의 ∆Cp 평균)<br>
-    ③ Normalized = 2^(−∆∆Cp) ÷ <b>${g.calPow.toFixed(4)}</b> &nbsp;(= ${esc(cal)}의 2^(−∆∆Cp) 평균) → ${esc(cal)}이 정확히 1</div>`;
+    ${T('tr2', g.calDcp.toFixed(4), esc(cal))}<br>
+    ${T('tr3', g.calPow.toFixed(4), esc(cal))}</div>`;
   return h;
 }
 
@@ -1186,12 +1432,12 @@ function niceTicks(max){
   return {top:Math.ceil(max/step)*step, step};
 }
 function chart(g,cal){
-  const W=560,H=350,L=68,R=18,T=30,B=76, pw=W-L-R, ph=H-T-B;
+  const W=560,H=350,L=68,R=18,MT=30,B=76, pw=W-L-R, ph=H-MT-B;
   const bs=g.blocks.filter(b=>b.n>0);
   if(!bs.length) return `<svg viewBox="0 0 ${W} ${H}"></svg>`;
   const hi=Math.max(...bs.map(b=>Math.max(b.mean+(b.sd||0),...b.reps.map(r=>r.norm))));
   const {top,step}=niceTicks(hi*1.14);
-  const y=v=>T+ph-(v/top)*ph;
+  const y=v=>MT+ph-(v/top)*ph;
   const gap=pw/bs.length, bw=Math.min(62,gap*0.56);
   let s=`<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" font-family="Pretendard, Pretendard Variable, sans-serif"><rect width="${W}" height="${H}" fill="#fff"/>`;
   for(let v=0;v<=top+1e-9;v+=step){
@@ -1199,12 +1445,12 @@ function chart(g,cal){
     s+=`<line x1="${L}" y1="${yy}" x2="${L+pw}" y2="${yy}" stroke="${v===0?'#161D24':'#EFF2F0'}" stroke-width="${v===0?1.2:1}"/>
     <text x="${L-10}" y="${yy+4}" text-anchor="end" font-size="11" font-family="Spline Sans Mono, monospace" fill="#5B6770">${+v.toFixed(4)}</text>`;
   }
-  s+=`<line x1="${L}" y1="${T}" x2="${L}" y2="${T+ph}" stroke="#161D24" stroke-width="1.2"/>
-  <text transform="translate(20,${T+ph/2}) rotate(-90)" text-anchor="middle" font-size="12.5" font-weight="600" fill="#161D24">Relative mRNA level</text>`;
+  s+=`<line x1="${L}" y1="${MT}" x2="${L}" y2="${MT+ph}" stroke="#161D24" stroke-width="1.2"/>
+  <text transform="translate(20,${MT+ph/2}) rotate(-90)" text-anchor="middle" font-size="12.5" font-weight="600" fill="#161D24">${T('chartY')}</text>`;
   if(1<=top) s+=`<line x1="${L}" y1="${y(1)}" x2="${L+pw}" y2="${y(1)}" stroke="#0E8C99" stroke-width="1" stroke-dasharray="4 3" opacity=".5"/>`;
   bs.forEach((b,i)=>{
     const cx=L+gap*i+gap/2, x0=cx-bw/2, isCal=b.group===cal;
-    s+=`<rect x="${x0}" y="${y(b.mean)}" width="${bw}" height="${Math.max(0,T+ph-y(b.mean))}" rx="2"
+    s+=`<rect x="${x0}" y="${y(b.mean)}" width="${bw}" height="${Math.max(0,MT+ph-y(b.mean))}" rx="2"
       fill="${isCal?'#E4F2F3':'#0E8C99'}" stroke="${isCal?'#0E8C99':'#0A6B75'}" stroke-width="1"/>`;
     let topY=y(b.mean);
     if(isFinite(b.sd)&&b.sd>0){
@@ -1226,10 +1472,10 @@ function chart(g,cal){
         font-weight="${isSig?'700':'400'}" fill="${isSig?'#0A6B75':'#93A0A8'}">${st}</text>`;
     }
     const lbl=b.group.length>13?b.group.slice(0,12)+'…':b.group;
-    s+=`<text x="${cx}" y="${T+ph+18}" text-anchor="end" font-size="11" fill="#161D24"
-      transform="rotate(-32 ${cx} ${T+ph+18})">${esc(lbl)}</text>`;
+    s+=`<text x="${cx}" y="${MT+ph+18}" text-anchor="end" font-size="11" fill="#161D24"
+      transform="rotate(-32 ${cx} ${MT+ph+18})">${esc(lbl)}</text>`;
   });
-  s+=`<text x="${L+pw/2}" y="${H-6}" text-anchor="middle" font-size="12.5" font-weight="600" fill="#161D24">Group</text></svg>`;
+  s+=`<text x="${L+pw/2}" y="${H-6}" text-anchor="middle" font-size="12.5" font-weight="600" fill="#161D24">${T('chartX')}</text></svg>`;
   return s;
 }
 function savePng(i,name){
@@ -1280,13 +1526,13 @@ function xlsx(res,ref,cal){
       r=rs+3;
     });
     const bl=g.blocks.filter(b=>b.n);
-    put(r,1,'Summary');
-    ['Group','Normalized Mean','STDEV','p (Welch)','p (Holm)','sig'].forEach((h,j)=>put(r+1,1+j,h));
+    put(r,1,T('xlSummary'));
+    ['Group','Normalized Mean','STDEV','p (Welch)','p (Holm)',T('xlSig')].forEach((h,j)=>put(r+1,1+j,h));
     bl.forEach((b,i)=>{
       const R=r+2+i;
       put(R,1,b.group);
       put(R,2,{f:`H${b._avg}`}); put(R,3,{f:`H${b._sd}`});
-      if(b.group===cal){ put(R,4,'—'); put(R,5,'—'); put(R,6,'기준'); }
+      if(b.group===cal){ put(R,4,'—'); put(R,5,'—'); put(R,6,T('refBase')); }
       else { put(R,4, isFinite(b.p)?+b.p.toFixed(6):'—');
              put(R,5, isFinite(b.padj)?+b.padj.toFixed(6):'—');
              put(R,6, stars(b.padj)); }
@@ -1297,7 +1543,7 @@ function xlsx(res,ref,cal){
       put(ar,2,`F(${g.anova.df1},${g.anova.df2})`); put(ar,3,+g.anova.F.toFixed(4));
       put(ar,4,'p'); put(ar,5,+g.anova.p.toFixed(6));
     }
-    put(ar+1,1,'검정은 ∆Cp 값으로 수행 (Welch t-test, Holm 보정)');
+    put(ar+1,1,T('xlNote'));
     const ws=XLSX.utils.aoa_to_sheet(A);
     ws['!cols']=[{wch:3},{wch:16},{wch:14},{wch:13},{wch:11},{wch:11},{wch:13},{wch:13}];
     XLSX.utils.book_append_sheet(wb,ws,String(g.target).slice(0,31));
