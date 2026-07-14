@@ -9,6 +9,8 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Spline+Sans+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pptxgenjs/4.0.1/pptxgen.bundle.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <style>
   :root{
     --paper:#F6F7F4; --surface:#FFFFFF;
@@ -279,6 +281,25 @@
   .export .note{font-size:12.5px;color:var(--ink-3)}
   .hidden{display:none}
 
+  /* --- 군별 요약 --- */
+  .grpwrap{overflow-x:auto}
+  table.grp{border-collapse:collapse;font-size:13.5px;width:100%;min-width:460px}
+  table.grp th{font-family:'Spline Sans Mono',monospace;font-size:11px;font-weight:600;letter-spacing:.05em;
+    text-transform:uppercase;color:var(--ink-3);text-align:right;padding:0 11px 9px;
+    border-bottom:1.5px solid var(--ink-3);white-space:nowrap}
+  table.grp th:first-child{text-align:left;padding-left:8px}
+  table.grp th+th{border-left:1px solid var(--rule)}
+  table.grp td{padding:9px 11px;border-bottom:1px solid #EFF2F0;text-align:right;
+    font-family:'Spline Sans Mono',monospace;font-variant-numeric:tabular-nums;white-space:nowrap}
+  table.grp td+td{border-left:1px solid #F1F4F2}
+  table.grp td:first-child{text-align:left;padding-left:8px;
+    font-family:'Pretendard Variable',Pretendard,sans-serif;font-weight:600}
+  table.grp tbody tr:hover td{background:#FAFBFA}
+  table.grp tr.calrow td{background:var(--fam-wash);border-left-color:#CBE4E6}
+  table.grp tr.calrow td:first-child{color:var(--fam-deep)}
+  table.grp .pm{color:var(--ink-3);font-size:12px}
+  table.grp .st{color:var(--fam-deep);font-weight:700;margin-left:3px}
+
   /* --- Reference 안정성 --- */
   .refwrap{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,320px);gap:24px;align-items:start}
   @media(max-width:900px){.refwrap{grid-template-columns:1fr}}
@@ -540,6 +561,18 @@
     </section>
 
     <section>
+      <div class="eyebrow" data-i="eyeGrp"></div>
+      <div class="panel">
+        <p style="font-size:13.5px;line-height:1.7;margin-bottom:16px" data-i="grpIntro"></p>
+        <div class="grpwrap"><table class="grp" id="grptbl"></table></div>
+        <div class="legbar">
+          <button id="grp-copy" data-i="grpCopy"></button>
+          <span class="hint" style="margin:0" data-i="grpNote"></span>
+        </div>
+      </div>
+    </section>
+
+    <section>
       <div class="eyebrow" data-i="eyeCmp"></div>
       <div class="panel">
         <p style="font-size:13.5px;line-height:1.7;margin-bottom:16px" data-i="cmpIntro"></p>
@@ -562,9 +595,10 @@
     <section>
       <div class="eyebrow" data-i="eyeExp"></div>
       <div class="panel export">
-        <button class="solid" id="dl-xlsx" data-i="expXlsx"></button>
+        <button class="solid" id="dl-pptx" data-i="expPptx"></button>
+        <button id="dl-xlsx" data-i="expXlsx"></button>
         <button id="dl-csv" data-i="expCsv"></button>
-        <span class="note" data-i="expNote"></span>
+        <span class="note" data-i="expPptxNote"></span>
       </div>
     </section>
 
@@ -693,6 +727,17 @@ ko:{
  chartTitle:(t,r,c)=>`${t} — ΔΔCt`,
  xlNote:'검정은 ∆Cp 값으로 수행 (Welch t-test, Holm 보정)',
  xlSummary:'Summary', xlSig:'sig',
+ eyeGrp:'군별 요약',
+ grpIntro:'유전자별 카드는 하나씩 뜯어보기 위한 것이고, 이 표는 <b>군 단위로 한눈에</b> 보기 위한 것입니다. 랩미팅 슬라이드에 그대로 옮기기 좋습니다.',
+ grpNote:'셀 = 정규화값 평균 ± 오차. 별표는 calibrator 대비 Holm 보정 p값.',
+ grpCopy:'표 복사', grpCopied:'복사됨',
+ expPptx:'PPT로 저장',
+ expPptxNote:'슬라이드마다 편집 가능한 네이티브 차트 — PPT에서 축·색·라벨 그대로 수정됩니다',
+ pptSum:'군별 요약',
+ pptSub:o=>`${o.ref} 정규화 · calibrator ${o.cal} = 1 · 오차막대 ${o.err} · n = ${o.n}`,
+ pptAxis:'Relative mRNA level',
+ xlByGroup:'군별요약',
+
  lbErr:'오차막대',
  errSD:'SD — 표준편차', errSEM:'SEM — 표준오차',
  sdShort:'SD', semShort:'SEM',
@@ -824,6 +869,17 @@ en:{
  chartTitle:(t,r,c)=>`${t} — ΔΔCt`,
  xlNote:'Tests performed on ∆Cp values (Welch t-test, Holm correction)',
  xlSummary:'Summary', xlSig:'sig',
+ eyeGrp:'Summary by group',
+ grpIntro:'The per-gene cards are for digging into one gene at a time; this table is for seeing <b>everything by group at a glance</b>. It drops straight into a lab-meeting slide.',
+ grpNote:'Cells = mean normalized value ± error. Asterisks are Holm-adjusted p-values versus the calibrator.',
+ grpCopy:'Copy table', grpCopied:'Copied',
+ expPptx:'Download PowerPoint',
+ expPptxNote:'One editable native chart per slide — axes, colours and labels stay editable in PowerPoint',
+ pptSum:'Summary by group',
+ pptSub:o=>`Normalized to ${o.ref} · calibrator ${o.cal} = 1 · error bars ${o.err} · n = ${o.n}`,
+ pptAxis:'Relative mRNA level',
+ xlByGroup:'By group',
+
  lbErr:'Error bars',
  errSD:'SD — standard deviation', errSEM:'SEM — standard error',
  sdShort:'SD', semShort:'SEM',
@@ -1324,7 +1380,59 @@ function compute(mode){
 }
 
 /* ============ 렌더 ============ */
-function render(){ renderChips(); renderPlate(); renderRef(); renderGenes(); renderAlerts(); renderCompare(); renderLegend(); }
+function render(){ renderChips(); renderPlate(); renderRef(); renderGenes(); renderGroupTable(); renderAlerts(); renderCompare(); renderLegend(); }
+
+/** 군을 행으로, 유전자를 열로 — 랩미팅 슬라이드용 */
+function groupMatrix(){
+  const {res,ref,cal}=compute();
+  const genes=res.filter(g=>g.ok);
+  const groups=ORDER.filter(g=>RAW.some(r=>r.sample===g));
+  const cells=groups.map(gr=>({
+    group:gr,
+    isCal:gr===cal,
+    vals:genes.map(g=>{
+      const b=g.blocks.find(x=>x.group===gr);
+      return (b&&b.n)?{mean:b.mean, err:b.err, n:b.n, padj:b.padj, isCal:gr===cal}:null;
+    })
+  })).filter(row=>row.vals.some(v=>v));
+  return {genes, cells, ref, cal};
+}
+function renderGroupTable(){
+  const M=groupMatrix();
+  const t=document.getElementById('grptbl');
+  if(!M.genes.length){ t.innerHTML=''; return; }
+  t.innerHTML=`<thead><tr><th>${T('refC1')}</th>${
+    M.genes.map(g=>`<th>${esc(g.target)}</th>`).join('')}</tr></thead><tbody>`+
+    M.cells.map(row=>`<tr class="${row.isCal?'calrow':''}">
+      <td>${esc(row.group)}</td>${
+      row.vals.map(v=>{
+        if(!v) return '<td>—</td>';
+        const st = v.isCal ? '' : (isFinite(v.padj)&&v.padj<0.05 ? `<span class="st">${stars(v.padj)}</span>` : '');
+        const pm = (v.n>1&&isFinite(v.err)) ? `<span class="pm"> ± ${F(v.err,3)}</span>` : '';
+        return `<td>${F(v.mean,3)}${pm}${st}</td>`;
+      }).join('')}</tr>`).join('')+'</tbody>';
+
+  const btn=document.getElementById('grp-copy');
+  btn.onclick=async()=>{
+    const lines=[[T('refC1'),...M.genes.map(g=>g.target)].join('\t')];
+    M.cells.forEach(row=>lines.push([row.group,...row.vals.map(v=>{
+      if(!v) return '';
+      const st=v.isCal?'':(isFinite(v.padj)&&v.padj<0.05?' '+stars(v.padj):'');
+      return (v.n>1&&isFinite(v.err)) ? `${F(v.mean,3)} ± ${F(v.err,3)}${st}` : F(v.mean,3);
+    })].join('\t')));
+    const txt=lines.join('\n');
+    try{ await navigator.clipboard.writeText(txt); }
+    catch(e){
+      const ta=document.createElement('textarea'); ta.value=txt;
+      ta.style.position='fixed'; ta.style.opacity='0';
+      document.body.appendChild(ta); ta.select();
+      try{ document.execCommand('copy'); }catch(_){}
+      ta.remove();
+    }
+    btn.textContent=T('grpCopied');
+    setTimeout(()=>{ btn.textContent=T('grpCopy'); },1600);
+  };
+}
 
 /** reference 유전자가 군에 따라 흔들리는지 */
 function refStats(){
@@ -1601,6 +1709,7 @@ function renderGenes(){
   });
   document.getElementById('dl-xlsx').onclick=()=>xlsx(res,ref,cal);
   document.getElementById('dl-csv').onclick=()=>csv(res,ref,cal);
+  document.getElementById('dl-pptx').onclick=()=>pptx();
 }
 
 function trace(g,cal,ref){
@@ -1703,6 +1812,106 @@ function dl(blob,name){
   setTimeout(()=>URL.revokeObjectURL(a.href),1500);
 }
 
+
+/* ============ PPT 내보내기 ============
+   PptxGenJS는 네이티브 차트는 만들지만 오차막대를 지원하지 않는다.
+   그래서 생성된 pptx를 JSZip으로 열어 차트 XML에 <c:errBars>를 직접 주입한다.
+   결과물은 PPT에서 완전히 편집 가능한 차트로 열린다. */
+function errBarsXml(vals){
+  const pts=vals.map((v,i)=>`<c:pt idx="${i}"><c:v>${isFinite(v)?v:0}</c:v></c:pt>`).join('');
+  const lit=`<c:numLit><c:formatCode>General</c:formatCode><c:ptCount val="${vals.length}"/>${pts}</c:numLit>`;
+  return '<c:errBars><c:errDir val="y"/><c:errBarType val="both"/><c:errValType val="cust"/>'
+       + '<c:noEndCap val="0"/><c:plus>'+lit+'</c:plus><c:minus>'+lit+'</c:minus></c:errBars>';
+}
+
+async function pptx(){
+  const btn=document.getElementById('dl-pptx');
+  const label=btn.textContent;
+  btn.disabled=true; btn.textContent='…';
+  try{
+    const {res,ref,cal}=compute();
+    const genes=res.filter(g=>g.ok);
+    if(!genes.length) return;
+    const M=groupMatrix();
+    const ns=[...new Set(genes.flatMap(g=>g.blocks.filter(b=>b.n).map(b=>b.n)))].sort();
+    const nTxt=ns.length===1?String(ns[0]):`${ns[0]}–${ns[ns.length-1]}`;
+    const sub=T('pptSub',{ref,cal,err:errName(),n:nTxt});
+
+    const p=new PptxGenJS();
+    p.layout='LAYOUT_16x9';
+    const INK='161D24', SUBTLE='5B6770', FAM='0E8C99', WASH='E4F2F3';
+
+    // --- 1) 군별 요약 표 ---
+    const s0=p.addSlide();
+    s0.addText(T('pptSum'), {x:0.5,y:0.35,w:9,h:0.5,fontSize:24,bold:true,color:INK});
+    s0.addText(sub, {x:0.5,y:0.85,w:9,h:0.3,fontSize:11,color:SUBTLE});
+    const head=[{text:'Group',options:{bold:true,color:SUBTLE,fill:{color:'F2F4F2'}}}]
+      .concat(M.genes.map(g=>({text:g.target,options:{bold:true,color:SUBTLE,fill:{color:'F2F4F2'},align:'right'}})));
+    const body=M.cells.map(row=>{
+      const c0={text:row.group,options:{bold:true,color:row.isCal?FAM:INK,fill:{color:row.isCal?WASH:'FFFFFF'}}};
+      const rest=row.vals.map(v=>{
+        if(!v) return {text:'—',options:{align:'right',fill:{color:row.isCal?WASH:'FFFFFF'}}};
+        const st=v.isCal?'':(isFinite(v.padj)&&v.padj<0.05?' '+stars(v.padj):'');
+        const txt=(v.n>1&&isFinite(v.err))?`${F(v.mean,3)} ± ${F(v.err,3)}${st}`:F(v.mean,3);
+        return {text:txt,options:{align:'right',fill:{color:row.isCal?WASH:'FFFFFF'}}};
+      });
+      return [c0].concat(rest);
+    });
+    s0.addTable([head].concat(body), {
+      x:0.5, y:1.35, w:9, fontSize:12, color:INK, border:{type:'solid',color:'DDE3E0',pt:0.5},
+      autoPage:false, valign:'middle', rowH:0.36
+    });
+    s0.addText(T('grpNote'), {x:0.5,y:5.05,w:9,h:0.3,fontSize:9,color:SUBTLE});
+
+    // --- 2) 유전자별 슬라이드 (네이티브 편집 가능 차트) ---
+    const errByGene={};
+    genes.forEach(g=>{
+      const bl=g.blocks.filter(b=>b.n);
+      const s=p.addSlide();
+      s.addText(g.target, {x:0.5,y:0.32,w:9,h:0.5,fontSize:24,bold:true,color:INK});
+      s.addText(sub, {x:0.5,y:0.82,w:9,h:0.3,fontSize:11,color:SUBTLE});
+      s.addChart(p.ChartType.bar, [{
+        name:g.target,
+        labels:bl.map(b=>b.group),
+        values:bl.map(b=>+b.mean.toFixed(6))
+      }], {
+        x:0.6, y:1.25, w:8.8, h:3.9,
+        barDir:'col', barGapWidthPct:120,
+        chartColors:[FAM],
+        valAxisTitle:T('pptAxis'), showValAxisTitle:true,
+        valAxisMinVal:0, valGridLine:{style:'solid',color:'EFF2F0',size:1},
+        catGridLine:{style:'none'},
+        valAxisLabelFontSize:11, catAxisLabelFontSize:11,
+        valAxisTitleFontSize:12,
+        showLegend:false, showTitle:false,
+        border:{pt:0,color:'FFFFFF'}
+      });
+      errByGene[g.target]=bl.map(b=>isFinite(b.err)?+b.err.toFixed(6):0);
+    });
+
+    // --- 3) 오차막대 주입 ---
+    const buf=await p.write({outputType:'arraybuffer'});
+    const zip=await JSZip.loadAsync(buf);
+    const charts=Object.keys(zip.files).filter(f=>/^ppt\/charts\/chart\d+\.xml$/.test(f));
+    for(const path of charts){
+      let xml=await zip.file(path).async('string');
+      // 시리즈 이름(=유전자명)으로 어느 차트인지 식별
+      const m=/<c:tx>[\s\S]*?<c:v>([^<]*)<\/c:v>[\s\S]*?<\/c:tx>/.exec(xml);
+      const name=m?m[1]:null;
+      const errs=name && errByGene[name];
+      if(!errs || !errs.some(v=>v>0)) continue;
+      // OOXML 스키마상 errBars 는 c:ser 내에서 <c:cat> 바로 앞에 온다
+      xml=xml.replace('<c:cat>', errBarsXml(errs)+'<c:cat>');
+      zip.file(path, xml);
+    }
+    const blob=await zip.generateAsync({type:'blob',
+      mimeType:'application/vnd.openxmlformats-officedocument.presentationml.presentation'});
+    dl(blob,'ddCt_slides.pptx');
+  } finally {
+    btn.disabled=false; btn.textContent=label;
+  }
+}
+
 /* ============ 내보내기 ============ */
 function xlsx(res,ref,cal){
   const wb=XLSX.utils.book_new();
@@ -1755,6 +1964,27 @@ function xlsx(res,ref,cal){
     ws['!cols']=[{wch:3},{wch:16},{wch:14},{wch:13},{wch:11},{wch:11},{wch:13},{wch:13}];
     XLSX.utils.book_append_sheet(wb,ws,String(g.target).slice(0,31));
   });
+  // ---- 군별 요약 시트 (행=군, 열=유전자) ----
+  const M=groupMatrix();
+  if(M.genes.length){
+    const G=[]; const pg=(r,c,v)=>{G[r]=G[r]||[];G[r][c]=v;};
+    pg(0,0,T('pptSum'));
+    pg(1,0,'Group');
+    M.genes.forEach((g,j)=>{ pg(1,1+j*3,g.target); pg(1,2+j*3,errName()); pg(1,3+j*3,'sig'); });
+    M.cells.forEach((row,i)=>{
+      pg(2+i,0,row.group);
+      row.vals.forEach((v,j)=>{
+        if(!v) return;
+        pg(2+i,1+j*3, +v.mean.toFixed(6));
+        pg(2+i,2+j*3, isFinite(v.err)?+v.err.toFixed(6):'—');
+        pg(2+i,3+j*3, v.isCal?T('refBase'):stars(v.padj));
+      });
+    });
+    const gs=XLSX.utils.aoa_to_sheet(G);
+    gs['!cols']=[{wch:16}].concat(M.genes.flatMap(()=>[{wch:11},{wch:10},{wch:6}]));
+    XLSX.utils.book_append_sheet(wb,gs,T('xlByGroup'));
+  }
+
   // ---- QC 감사 시트: 설정 + 모든 웰의 포함/제외 이력 ----
   const Q=[]; const put=(r,c,v)=>{Q[r]=Q[r]||[];Q[r][c]=v;};
   const {late,high}=flags();
