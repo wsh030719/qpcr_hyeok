@@ -1,0 +1,1792 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- 보안: 이 페이지는 어떤 서버로도 데이터를 보내지 않는다. connect-src 'none'이 fetch/XHR/WebSocket/beacon을,
+     img-src가 외부 이미지 요청을 막아서, 라이브러리가 오염되더라도 업로드한 실험 데이터를 밖으로 보내기 어렵게 한다. -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'unsafe-inline' https://cdn.jsdelivr.net; font-src https://cdn.jsdelivr.net; img-src data: blob:; connect-src 'none'; form-action 'none'; base-uri 'none'; object-src 'none'">
+<meta name="referrer" content="no-referrer">
+<title>ΔΔCt qPCR analyzer</title>
+<!-- 외부 파일은 SRI(integrity)로 고정한다. 내용이 한 바이트라도 바뀌면 브라우저가 실행하지 않는다. -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pretendard@1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.css" integrity="sha384-uR1wgObmx89ZQ4VVXHdzjbDJZ1PvBK01K+E3GebmaBKdZ87qRJvBWPoPbzWeEd5T" crossorigin="anonymous">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js" integrity="sha384-vtjasyidUo0kW94K5MXDXntzOJpQgBKXmE7e2Ga4LG0skTTLeBi97eFAXsqewJjw" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pptxgenjs/4.0.1/pptxgen.bundle.js" integrity="sha384-qb0Xhi7LLYpvW1HCK6oMrmDLSY9sy7vwm6ZlV6KjtrlL9yg30+YN4neTwnmX+Kp8" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js" integrity="sha384-+mbV2IY1Zk/X1p/nWllGySJSUN8uMs+gUAN10Or95UBH0fpj6GfKgPmgC5EXieXG" crossorigin="anonymous"></script>
+<style>
+  /* ---------- 토큰 ---------- */
+  :root{
+    --bg:#F7F5F0;                     /* 생성 면 */
+    --bg-2:#EFECE5;                   /* 한 단계 어두운 종이: 선택/hover/기준군 행 */
+    --ink:#2A2824;                    /* 먹 */
+    --ink-2:rgba(42,40,36,.82);       /* 보조 글자: 본문 글자색에서 투명도만 낮춤 */
+    --line:#DCD7CD;
+    /* 데이터 상태 색. 구분 기능이 있는 곳(웰 상태, 경고 라벨, 편차 막대)에만 쓴다 */
+    --st-bad:#A3412C;  --st-bad-wash:#F3E3DC;
+    --st-warn:#8F6418; --st-warn-wash:#F2E8D3;
+
+    --font:'Pretendard Variable',Pretendard,-apple-system,BlinkMacSystemFont,system-ui,'Helvetica Neue',sans-serif;
+    /* 글자 크기 단계: 13 / 14 / 18 / 20 (DESIGN 6번) */
+    --fs-cap:13px; --fs-body:14px; --fs-h3:18px; --fs-h2:20px;
+
+    --ease-out:cubic-bezier(0.22,1,0.36,1);
+    --ease-in-out:cubic-bezier(0.65,0,0.35,1);
+    --dur-micro:180ms; --dur-reveal:360ms; --dur-layer:480ms;
+
+    --sec:120px;                      /* 섹션 사이 */
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{overflow-x:hidden}
+  body{background:var(--bg);color:var(--ink);font-family:var(--font);
+    font-size:var(--fs-body);line-height:1.65;font-weight:400;
+    font-variant-numeric:tabular-nums;-webkit-font-smoothing:antialiased}
+  h1,h2,h3{font-weight:500}
+  h2{font-size:var(--fs-h2);line-height:1.3;letter-spacing:-.015em}
+  h3{font-size:var(--fs-h3);line-height:1.3;letter-spacing:-.01em}
+  .cap{font-size:var(--fs-cap);line-height:1.5}
+  code{font-family:inherit}
+  .hidden{display:none !important}
+  .scroll-x{overflow-x:auto;-webkit-overflow-scrolling:touch}
+
+  .wrap{max-width:1200px;margin:0 auto;padding:0 32px 120px}
+  section{margin-top:var(--sec)}
+  .prose{max-width:720px}
+  p + p{margin-top:12px}
+
+  /* ---------- 머리 ---------- */
+  .top{border-bottom:1px solid var(--line)}
+  .top-in{max-width:1200px;margin:0 auto;padding:24px 32px;display:flex;align-items:baseline;justify-content:space-between;gap:24px}
+  .home{display:flex;align-items:baseline;gap:16px;color:inherit;text-decoration:none;min-width:0}
+  .home h1{font-size:var(--fs-h3);line-height:1.3;letter-spacing:-.01em}
+  .home .sub{color:var(--ink-2)}
+  .home:hover h1{opacity:.7}
+  .lang{display:flex;gap:4px;flex:0 0 auto}
+  .lang button{border:none;background:none;padding:4px 8px;color:var(--ink-2);font-weight:400}
+  .lang button:hover{background:none;color:var(--ink)}
+  .lang button[aria-pressed=true]{color:var(--ink);text-decoration:underline;text-underline-offset:4px;text-decoration-thickness:1px}
+
+  /* ---------- 버튼, 입력 ---------- */
+  button{font:inherit;font-size:var(--fs-body);font-weight:500;line-height:1.4;color:var(--ink);
+    background:transparent;border:1px solid var(--line);border-radius:6px;padding:8px 16px;cursor:pointer;
+    transition:transform 100ms var(--ease-out)}
+  button:hover{background:var(--bg-2)}
+  button:active{transform:scale(.98)}
+  button:disabled{opacity:.5;cursor:default}
+  button.solid{background:var(--ink);border-color:var(--ink);color:var(--bg)}
+  button.solid:hover{background:var(--ink);opacity:.88}
+  button.link{border:none;background:none;padding:0;font-weight:400;
+    text-decoration:underline;text-underline-offset:3px;text-decoration-thickness:1px}
+  button.link:hover{background:none;opacity:.7}
+  :focus-visible{outline:1px solid var(--ink);outline-offset:2px}
+
+  label,.lbl{display:block;color:var(--ink-2);margin-bottom:8px}
+  select{font:inherit;font-size:var(--fs-body);color:var(--ink);width:100%;height:40px;
+    padding:8px 36px 8px 12px;border:1px solid var(--line);border-radius:6px;cursor:pointer;
+    -webkit-appearance:none;appearance:none;text-overflow:ellipsis;
+    background:var(--bg) url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5L6 6.5L11 1.5' stroke='%232A2824' stroke-width='1.2' fill='none'/%3E%3C/svg%3E") no-repeat right 12px center}
+  select:hover{border-color:var(--ink-2)}
+
+  details summary{cursor:pointer;list-style:none;display:inline-flex;align-items:center;gap:8px}
+  details summary::-webkit-details-marker{display:none}
+  details summary::before{content:"";width:6px;height:6px;border-right:1px solid currentColor;border-bottom:1px solid currentColor;
+    transform:rotate(-45deg);transition:transform var(--dur-micro) var(--ease-out)}
+  details[open] summary::before{transform:rotate(45deg)}
+
+  /* ---------- 표 (모든 표가 같은 규칙) ---------- */
+  .data,.ref,.grp,.cmp,.tracetbl,.ex,.instr{width:100%;border-collapse:collapse}
+  .data th,.ref th,.grp th,.cmp th,.tracetbl th,.ex th,.instr th{
+    font-size:var(--fs-cap);font-weight:400;color:var(--ink-2);text-align:right;white-space:nowrap;
+    padding:0 12px 8px;border-bottom:1px solid var(--line);vertical-align:bottom}
+  .data td,.ref td,.grp td,.cmp td,.tracetbl td,.ex td,.instr td{
+    padding:8px 12px;border-bottom:1px solid var(--line);text-align:right;vertical-align:top}
+  .data th:first-child,.ref th:first-child,.grp th:first-child,.cmp th:first-child,.tracetbl th:first-child,.ex th:first-child,.instr th:first-child,
+  .data td:first-child,.ref td:first-child,.grp td:first-child,.cmp td:first-child,.tracetbl td:first-child,.ex td:first-child,.instr td:first-child{
+    text-align:left;padding-left:0}
+  .data td:first-child,.ref td:first-child,.grp td:first-child,.cmp td:first-child{font-weight:500}
+  .data tr:last-child td,.ref tr:last-child td,.grp tr:last-child td{border-bottom:none}
+  .data tbody tr:hover td,.ref tbody tr:hover td,.grp tbody tr:hover td,.cmp tbody tr:hover td,.tracetbl tbody tr:hover td{background:var(--bg-2)}
+  .calrow td{background:var(--bg-2)}
+  .ex th,.ex td,.instr th,.instr td{text-align:left}
+  .ex{width:auto}
+  .instr td:first-child{white-space:nowrap}
+  .sd,.n,.ns,.calc,.pm{color:var(--ink-2)}
+  .star{font-weight:500}
+  .grp td,.data td,.ref td,.cmp td,.tracetbl td{white-space:nowrap}
+  .grp .st{margin-left:4px;font-weight:500}
+  .grp{min-width:480px}
+
+  /* ---------- 첫 화면 ---------- */
+  .intro{margin-top:64px}
+  .drop{border:1px dashed var(--ink-2);border-radius:8px;padding:64px 32px;text-align:center;cursor:pointer}
+  .drop:hover,.drop.over{background:var(--bg-2)}
+  .drop p{margin-top:8px}
+  .drop .cap{margin-top:24px}
+  .drop .err{color:var(--st-bad)}
+  .demo-line{margin-top:16px}
+
+  .guide-grid{display:grid;grid-template-columns:minmax(0,7fr) minmax(0,5fr);gap:64px;align-items:start}
+  .guide-grid h2{margin-bottom:16px}
+  .need{margin-top:24px;border-top:1px solid var(--line)}
+  .need div{display:grid;grid-template-columns:128px 1fr;gap:16px;padding:12px 0;border-bottom:1px solid var(--line)}
+  .need dt{font-weight:500}
+  .guide-side h3{font-size:var(--fs-body);line-height:1.65;letter-spacing:0;margin-top:32px}
+  .guide-side h3 + p{margin-top:4px}
+  .instr-sec{margin-top:96px}
+  .instr-sec h3{margin-bottom:16px}
+  .instr-sec .note{margin-top:16px}
+
+  /* ---------- 설정 ---------- */
+  .settings{margin-top:48px}
+  .filebar{display:flex;align-items:baseline;gap:16px;padding-bottom:16px;border-bottom:1px solid var(--line)}
+  .filebar .fn{flex:1 1 auto;min-width:0;font-size:var(--fs-h3);font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .filebar button{flex:0 0 auto}
+  .ctrls{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:24px;margin-top:24px}
+  .order{margin-top:24px}
+  .chips{display:flex;flex-wrap:wrap;gap:8px}
+  .chip{display:inline-flex;align-items:center;gap:8px;padding:4px 12px;border:1px solid var(--line);border-radius:4px;
+    background:var(--bg);cursor:grab;user-select:none}
+  .chip .idx{color:var(--ink-2)}
+  .chip.cal{border-color:var(--ink)}
+  .chip.drag{opacity:.4}
+  details.map{margin-top:24px}
+  details.map .body{margin-top:16px}
+  .mapgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(176px,1fr));gap:16px 24px}
+  .maphint{margin-top:12px}
+
+  /* ---------- Plate QC ---------- */
+  .plate-head{display:flex;justify-content:space-between;align-items:baseline;gap:16px;flex-wrap:wrap;margin-top:16px}
+  .legend{display:flex;gap:24px;flex-wrap:wrap}
+  .legend span{display:inline-flex;align-items:center;gap:8px}
+  .sw{width:12px;height:12px;border-radius:2px;border:1px solid var(--line);display:inline-block}
+  .sw.warn{background:var(--st-warn-wash)} .sw.bad{background:var(--st-bad-wash)} .sw.off{background:var(--bg-2);opacity:.6}
+  .plate-scroll{overflow-x:auto;margin-top:16px;-webkit-overflow-scrolling:touch}
+  .plate{border-collapse:separate;border-spacing:4px;margin-left:-4px}
+  .plate th{font-size:var(--fs-cap);font-weight:400;color:var(--ink-2);padding:0 4px}
+  .well{width:72px;height:48px;border:1px solid var(--line);border-radius:4px;padding:4px;text-align:center;cursor:pointer;vertical-align:middle}
+  .well:hover{border-color:var(--ink)}
+  .well.empty{border-color:transparent;cursor:default}
+  .well.empty:hover{border-color:transparent}
+  .well .ct{font-size:var(--fs-cap);font-weight:500;line-height:1.3}
+  .well .tg{font-size:var(--fs-cap);line-height:1.3;color:var(--ink-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:62px;margin:0 auto}
+  .well.warn{background:var(--st-warn-wash)} .well.warn .ct{color:var(--st-warn)}
+  .well.bad{background:var(--st-bad-wash)}  .well.bad .ct{color:var(--st-bad)}
+  .well.off{background:var(--bg-2);opacity:.55}
+  .well.off .ct{text-decoration:line-through}
+  .qcbar{display:flex;gap:16px;align-items:center;flex-wrap:wrap;margin-top:16px;padding-top:16px;border-top:1px solid var(--line)}
+  .qcbar #flagnote{flex:1 1 320px}
+  .qcbar #flagnote.has{color:var(--st-bad)}
+  .btns{display:flex;gap:8px;flex-wrap:wrap}
+
+  /* ---------- Reference 안정성 ---------- */
+  .refwrap{display:grid;grid-template-columns:minmax(0,2fr) minmax(0,1fr);gap:64px;align-items:start}
+  .refwrap h2{margin-bottom:16px}
+  .refwrap .scroll-x{margin-top:24px}
+  .dev{display:inline-flex;align-items:center;gap:8px;justify-content:flex-end}
+  .devbar{width:56px;height:6px;border-radius:3px;background:var(--bg-2);position:relative;overflow:hidden;flex:0 0 auto}
+  .devbar i{position:absolute;top:0;bottom:0;left:50%}
+  .verdict{padding-top:4px}
+  .verdict .why{margin-top:12px}
+  .stlabel{display:block;font-size:var(--fs-cap);font-weight:500;margin-bottom:4px;color:var(--ink-2)}
+  .stlabel.bad{color:var(--st-bad)} .stlabel.warn{color:var(--st-warn)}
+
+  /* ---------- 결과 ---------- */
+  .res-note{margin-top:16px}
+  #alerts{margin-top:32px;display:grid;gap:16px}
+  #alerts:empty{display:none}
+  .alert{border:1px solid var(--line);border-radius:6px;padding:16px 24px;display:flex;gap:24px;align-items:flex-start;max-width:960px}
+  .alert .txt{flex:1 1 auto;min-width:0}
+  .alert .at{font-weight:500}
+  .alert .at + p{margin-top:4px}
+  .alert .combos{margin-top:8px;color:var(--ink-2)}
+  .alert button{flex:0 0 auto}
+  .gene{margin-top:64px;padding-top:32px;border-top:1px solid var(--line)}
+  .gene-head{display:flex;align-items:baseline;gap:16px;margin-bottom:24px}
+  .gene-head .meta{color:var(--ink-2);flex:1 1 auto;min-width:0}
+  .gene-body{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:48px;align-items:start}
+  .chartbox svg{width:100%;height:auto;display:block}
+  .anova{margin-top:8px;color:var(--ink-2)}
+  .msg{margin-top:16px}
+  details.trace{margin-top:24px}
+  details.trace .scroll-x{margin-top:16px}
+  .tracetbl td:first-child,.tracetbl td:nth-child(2),.tracetbl th:nth-child(2){text-align:left}
+  .tracetbl td:nth-child(8){font-weight:500}
+  .tracetbl tr.gsep td{border-top:1px solid var(--ink-2)}
+  .tracetbl .gname{font-weight:500;white-space:nowrap}
+  .trace-steps{margin-top:16px;line-height:1.8}
+
+  /* ---------- 군별 요약, 비교, 그림 설명 ---------- */
+  .grp-sec .scroll-x{margin-top:24px}
+  .row-note{display:flex;gap:24px;align-items:flex-start;margin-top:16px;max-width:960px}
+  .row-note button{flex:0 0 auto}
+  .split{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,2fr);gap:64px;align-items:start}
+  .split h2{margin-bottom:16px}
+  .cmp td:nth-child(2),.cmp th:nth-child(2){text-align:left}
+  .cmp td:first-child{white-space:nowrap}
+  .cmp .cur{font-weight:500}
+  .cmp .low{color:var(--st-bad)}
+  .cmp tr.gsep td{border-top:1px solid var(--ink-2)}
+  .legbox{margin-top:24px;max-width:720px;padding:24px;border:1px solid var(--line);border-radius:4px;line-height:1.8}
+
+  /* ---------- 내보내기, 꼬리 ---------- */
+  .export{display:flex;gap:24px;align-items:center;flex-wrap:wrap;padding-top:32px;border-top:1px solid var(--line)}
+  .export p{flex:1 1 280px;color:var(--ink-2)}
+  footer{margin-top:96px;max-width:720px}
+  footer p + p{margin-top:16px}
+  footer .k{font-weight:500;margin-right:8px}
+  footer .eq{margin-bottom:24px}
+  .eq sub{font-size:.75em;vertical-align:-.2em}
+  .eq sup{font-size:.75em;vertical-align:.4em}
+  .eq .ar{margin:0 8px;color:var(--ink-2)}
+
+  /* ---------- 등장 ---------- */
+  @keyframes reveal{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+  @keyframes fade{from{opacity:0}to{opacity:1}}
+  #landing,#app{animation:reveal var(--dur-reveal) var(--ease-out)}
+  @media (prefers-reduced-motion:reduce){
+    #landing,#app{animation-name:fade}
+    button,details summary::before{transition:none}
+    button:active{transform:none}
+  }
+
+  /* ---------- 좁은 화면 ---------- */
+  @media (max-width:920px){
+    .gene-body,.refwrap,.split,.guide-grid{grid-template-columns:1fr;gap:32px}
+    .ctrls{grid-template-columns:repeat(2,minmax(0,1fr))}
+  }
+  @media (max-width:640px){
+    :root{--sec:64px}
+    .wrap{padding:0 16px 64px}
+    .top-in{padding:16px;flex-wrap:wrap;gap:8px}
+    .home{flex-direction:column;gap:0}
+    .ctrls{grid-template-columns:1fr;gap:16px}
+    .drop{padding:48px 16px}
+    .need div{grid-template-columns:1fr;gap:0}
+    .instr td:first-child{white-space:normal}
+    .alert,.row-note{flex-direction:column;gap:12px;padding:16px}
+    .row-note{padding:0}
+    .gene-head{flex-wrap:wrap}
+    .legbox{padding:16px}
+  }
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="top-in">
+    <a class="home" id="home" href="#" data-i-title="homeTip"><h1>ΔΔCt</h1><span class="sub" data-i="sub"></span></a>
+    <div class="lang" role="group" aria-label="Language">
+      <button data-lang="ko" aria-pressed="false">KO</button>
+      <button data-lang="en" aria-pressed="false">EN</button>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+  <div id="landing">
+    <section class="intro">
+      <div class="drop" id="drop" tabindex="0" role="button" data-i-aria="dropH">
+        <h2 data-i="dropH"></h2>
+        <p data-i="dropP"></p>
+        <p class="cap" data-i="dropPriv"></p>
+        <input type="file" id="file" accept=".xlsx,.xls,.csv" class="hidden">
+      </div>
+      <p class="demo-line"><span data-i="demoLead"></span> <button class="link" id="demo" data-i="demoBtn"></button></p>
+    </section>
+
+    <section>
+      <div class="guide-grid">
+        <div>
+          <h2 data-i="gdEye"></h2>
+          <p class="prose" data-i="gdIntro"></p>
+          <dl class="need">
+            <div><dt>Sample</dt><dd data-i="gdSample"></dd></div>
+            <div><dt>Target</dt><dd data-i="gdTarget"></dd></div>
+            <div><dt>Ct / Cq / Cp</dt><dd data-i="gdCt"></dd></div>
+            <div><dt>Well</dt><dd data-i="gdWellEx"></dd></div>
+          </dl>
+        </div>
+        <div class="guide-side">
+          <div class="scroll-x">
+            <table class="ex">
+              <thead><tr><th>Well</th><th>Sample Name</th><th>Target Name</th><th>CT</th></tr></thead>
+              <tbody>
+                <tr><td>A1</td><td>Control</td><td>GAPDH</td><td>15.3848</td></tr>
+                <tr><td>A2</td><td>Control</td><td>GAPDH</td><td>15.4137</td></tr>
+                <tr><td>A3</td><td>Control</td><td>GAPDH</td><td>15.7521</td></tr>
+                <tr><td>B1</td><td>Control</td><td>TNF</td><td>22.0599</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <h3 data-i="gdWarnT"></h3>
+          <p data-i="gdWarnB"></p>
+        </div>
+      </div>
+    </section>
+
+    <section class="instr-sec">
+      <h3 data-i="gdInstrEye"></h3>
+      <div class="scroll-x">
+        <table class="instr">
+          <thead><tr><th data-i="gdC1"></th><th data-i="gdC2"></th><th data-i="gdC3"></th></tr></thead>
+          <tbody>
+            <tr><td>Applied Biosystems QuantStudio</td><td data-i="gdI1"></td><td>CT</td></tr>
+            <tr><td>ABI 7500 · StepOnePlus (SDS)</td><td data-i="gdI2"></td><td>CT</td></tr>
+            <tr><td>Bio-Rad CFX (CFX Maestro)</td><td data-i="gdI3"></td><td>Cq</td></tr>
+            <tr><td>Roche LightCycler 480</td><td data-i="gdI4"></td><td>Cp</td></tr>
+            <tr><td>Agilent AriaMx</td><td data-i="gdI5"></td><td>Cq</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="note prose" data-i="gdFoot"></p>
+    </section>
+  </div>
+
+  <div id="app" class="hidden">
+    <section class="settings">
+      <div class="filebar">
+        <span class="cap" data-i="fileLead"></span>
+        <span class="fn" id="fname">—</span>
+        <button id="reset" data-i="resetBtn"></button>
+      </div>
+      <div class="ctrls">
+        <div class="field"><label for="ref" data-i="lbRef"></label><select id="ref"></select></div>
+        <div class="field"><label for="cal" data-i="lbCal"></label><select id="cal"></select></div>
+        <div class="field"><label for="pairmode" data-i="lbMode"></label>
+          <select id="pairmode">
+            <option value="sorted" data-i="mSorted"></option>
+            <option value="well" data-i="mWell"></option>
+            <option value="nopair" data-i="mNopair"></option>
+          </select></div>
+        <div class="field"><label for="errmode" data-i="lbErr"></label>
+          <select id="errmode">
+            <option value="sd" data-i="errSD"></option>
+            <option value="sem" data-i="errSEM"></option>
+          </select></div>
+      </div>
+      <div class="order">
+        <p class="lbl" data-i="lbOrder"></p>
+        <div class="chips" id="chips"></div>
+      </div>
+      <details class="map" id="mapbox">
+        <summary data-i="mapSum"></summary>
+        <div class="body">
+          <div class="mapgrid">
+            <div class="field" id="sheetfield"><label for="m-sheet" data-i="lbSheet"></label><select id="m-sheet"></select></div>
+            <div class="field"><label for="m-hdr" data-i="lbHdr"></label><select id="m-hdr"></select></div>
+            <div class="field"><label for="m-smp" data-i="lbSmp"></label><select id="m-smp"></select></div>
+            <div class="field"><label for="m-tgt" data-i="lbTgt"></label><select id="m-tgt"></select></div>
+            <div class="field"><label for="m-ct" data-i="lbCt"></label><select id="m-ct"></select></div>
+            <div class="field"><label for="m-well" data-i="lbWell"></label><select id="m-well"></select></div>
+          </div>
+          <p class="maphint" id="maphint"></p>
+        </div>
+      </details>
+    </section>
+
+    <section>
+      <h2 data-i="eyeQC"></h2>
+      <div class="plate-head">
+        <div class="legend">
+          <span><i class="sw"></i><span data-i="lgOk"></span></span>
+          <span><i class="sw warn"></i><span data-i="lgHigh"></span></span>
+          <span><i class="sw bad"></i><span data-i="lgBad"></span></span>
+          <span><i class="sw off"></i><span data-i="lgOff"></span></span>
+        </div>
+        <p class="cap" data-i="qcTip"></p>
+      </div>
+      <div class="plate-scroll"><table class="plate" id="plate"></table></div>
+      <div class="qcbar">
+        <p id="flagnote"></p>
+        <div class="btns">
+          <button id="excl-all" data-i="qcExcl"></button>
+          <button id="incl-all" data-i="qcIncl"></button>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="refwrap">
+        <div>
+          <h2 data-i="eyeRef"></h2>
+          <p class="prose" data-i="refIntro"></p>
+          <div class="scroll-x"><table class="ref" id="reftbl"></table></div>
+        </div>
+        <div id="refverdict"></div>
+      </div>
+    </section>
+
+    <section>
+      <h2 data-i="eyeRes"></h2>
+      <p class="res-note prose" data-i="cvNote"></p>
+      <div id="alerts"></div>
+      <div id="genes"></div>
+    </section>
+
+    <section class="grp-sec">
+      <h2 data-i="eyeGrp"></h2>
+      <div class="scroll-x"><table class="grp" id="grptbl"></table></div>
+      <div class="row-note">
+        <button id="grp-copy" data-i="grpCopy"></button>
+        <p data-i="grpNote"></p>
+      </div>
+    </section>
+
+    <section>
+      <div class="split">
+        <div>
+          <h2 data-i="eyeCmp"></h2>
+          <p data-i="cmpIntro"></p>
+          <p data-i="cmpFoot"></p>
+        </div>
+        <div class="scroll-x"><table class="cmp" id="cmptbl"></table></div>
+      </div>
+    </section>
+
+    <section>
+      <h2 data-i="eyeLeg"></h2>
+      <div class="legbox" id="legbox"></div>
+      <div class="row-note">
+        <button id="leg-copy" data-i="legCopy"></button>
+        <p data-i="legIntro"></p>
+      </div>
+    </section>
+
+    <section class="export">
+      <div class="btns">
+        <button class="solid" id="dl-pptx" data-i="expPptx"></button>
+        <button id="dl-xlsx" data-i="expXlsx"></button>
+        <button id="dl-csv" data-i="expCsv"></button>
+      </div>
+      <p data-i="expPptxNote"></p>
+    </section>
+
+    <footer>
+      <p class="eq" data-i="eq"></p>
+      <p><span class="k" data-i="ftCalcT"></span><span data-i="ftCalc"></span></p>
+      <p><span class="k" data-i="ftStatT"></span><span data-i="ftStat"></span></p>
+      <p><span class="k" data-i="ftEffT"></span><span data-i="ftEff"></span></p>
+    </footer>
+  </div>
+</main>
+
+<script>
+/* ================= state ================= */
+let WB=null;          // 워크북 전체 (시트 여러 개일 수 있음)
+let ROWS=[];          // 현재 시트 (2차원 배열)
+let MAP={hdr:-1,smp:-1,tgt:-1,ct:-1,well:-1};
+let RAW=[], EXCLUDED=new Set(), ORDER=[], FNAME='';
+const CT_LATE=35, SD_HIGH=0.5;
+const F=(x,d=4)=>(x==null||!isFinite(x))?'—':x.toFixed(d);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+const DEMO=[["A1","Control","GAPDH",15.3848],["A2","Control","GAPDH",15.4137],["A3","Control","GAPDH",15.7521],["A4","Vehicle","GAPDH",15.751],["A5","Vehicle","GAPDH",15.9846],["A6","Vehicle","GAPDH",15.8458],["A7","Drug 10uM","GAPDH",15.5736],["A8","Drug 10uM","GAPDH",15.7647],["A9","Drug 10uM","GAPDH",15.414],["A10","Drug 25uM","GAPDH",16.2267],["A11","Drug 25uM","GAPDH",15.8526],["A12","Drug 25uM","GAPDH",15.9717],["A13","Drug 50uM","GAPDH",16.3304],["A14","Drug 50uM","GAPDH",16.0933],["A15","Drug 50uM","GAPDH",16.0799],["B1","Control","TNF",22.0599],["B2","Control","TNF",22.0133],["B3","Control","TNF",22.5512],["B4","Vehicle","TNF",22.2691],["B5","Vehicle","TNF",22.4211],["B6","Vehicle","TNF",22.1327],["B7","Drug 10uM","TNF",21.867],["B8","Drug 10uM","TNF",21.7427],["B9","Drug 10uM","TNF",21.4067],["B10","Drug 25uM","TNF",21.0204],["B11","Drug 25uM","TNF",20.7438],["B12","Drug 25uM","TNF",21.0772],["B13","Drug 50uM","TNF",35.9061],["B14","Drug 50uM","TNF",36.557],["B15","Drug 50uM","TNF",35.737],["C1","Control","IL1B",24.1093],["C2","Control","IL1B",24.205],["C3","Control","IL1B",23.9252],["C4","Vehicle","IL1B",24.0206],["C5","Vehicle","IL1B",24.3168],["C6","Vehicle","IL1B",24.2171],["C7","Drug 10uM","IL1B",23.7338],["C8","Drug 10uM","IL1B",23.9587],["C9","Drug 10uM","IL1B",23.9771],["C10","Drug 25uM","IL1B",23.6816],["C11","Drug 25uM","IL1B",23.7817],["C12","Drug 25uM","IL1B",25.95],["C13","Drug 50uM","IL1B",23.1939],["C14","Drug 50uM","IL1B",23.4408],["C15","Drug 50uM","IL1B",23.0163],["D1","Control","MYOD1",21.7659],["D2","Control","MYOD1",21.818],["D3","Control","MYOD1",21.6157],["D4","Vehicle","MYOD1",21.7166],["D5","Vehicle","MYOD1",21.6457],["D6","Vehicle","MYOD1",21.931],["D7","Drug 10uM","MYOD1",22.4214],["D8","Drug 10uM","MYOD1",22.2064],["D9","Drug 10uM","MYOD1",22.4151],["D10","Drug 25uM","MYOD1",22.9597],["D11","Drug 25uM","MYOD1",22.6724],["D12","Drug 25uM","MYOD1",22.8979],["D13","Drug 50uM","MYOD1",23.0996],["D14","Drug 50uM","MYOD1",23.0598],["D15","Drug 50uM","MYOD1",23.291],["E1","Control","COL1A1",23.2376],["E2","Control","COL1A1",23.228],["E3","Control","COL1A1",23.1312],["E4","Vehicle","COL1A1",22.9018],["E5","Vehicle","COL1A1",23.1576],["E6","Vehicle","COL1A1",23.2406],["E7","Drug 10uM","COL1A1",23.3716],["E8","Drug 10uM","COL1A1",23.4424],["E9","Drug 10uM","COL1A1",23.2487],["E10","Drug 25uM","COL1A1",23.2709],["E11","Drug 25uM","COL1A1",23.4119],["E12","Drug 25uM","COL1A1",22.8229],["E13","Drug 50uM","COL1A1",23.2276],["E14","Drug 50uM","COL1A1",23.068],["E15","Drug 50uM","COL1A1",23.1505]];
+
+
+/* ============ i18n ============ */
+const I18N={
+ko:{
+ title:'ΔΔCt qPCR 분석기',
+ sub:'qPCR 상대 발현량 계산',
+ eq:'∆Cp = Ct<sub>target</sub> − Ct<sub>ref</sub><span class="ar">→</span>∆∆Cp = ∆Cp − ∆Cp<sub>cal</sub><span class="ar">→</span>2<sup>−∆∆Cp</sup>',
+ homeTip:'처음 화면으로',
+ dropH:'결과 파일을 여기에 놓거나 눌러서 고르세요',
+ dropP:'QuantStudio, SDS, LightCycler 등에서 내보낸 .xlsx, .xls, .csv 파일을 읽습니다.',
+ dropPriv:'파일은 이 브라우저 안에서만 읽고 어디에도 보내지 않습니다. 외부 전송은 보안 정책(CSP)으로 막아 두었습니다.',
+ demoLead:'파일이 없으면 가상 데이터로 먼저 볼 수 있습니다.',
+ demoBtn:'예시 데이터 열기',
+
+ gdEye:'올릴 파일',
+ gdIntro:'기기 소프트웨어에서 내보낸 결과 표를 고치지 않고 그대로 올리면 됩니다. 컬럼 이름은 기기마다 달라도 되고, 아래 정보만 들어 있으면 읽습니다.',
+ gdSample:'실험군 이름. 예: Control, Drug 10uM',
+ gdTarget:'유전자 이름. 예: GAPDH, TNF',
+ gdCt:'Ct 값. 예: 15.38, 22.06',
+ gdWellEx:'없어도 됩니다. 있으면 plate 배치를 그대로 그립니다.',
+ gdWarnT:'replicate는 한 줄에 하나씩 있어야 합니다',
+ gdWarnB:'3반복이면 같은 실험군과 유전자 조합이 세 줄로 있어야 SD와 p값을 낼 수 있습니다. 평균만 남은 Ct Mean 표로는 계산하지 못합니다.',
+ gdInstrEye:'기기별 내보내기 위치',
+ gdC1:'기기, 소프트웨어', gdC2:'내보내는 방법', gdC3:'Ct 컬럼',
+ gdI1:'Design &amp; Analysis 또는 QuantStudio SW → Export → Results (.xlsx)',
+ gdI2:'File → Export → Results (.xls)',
+ gdI3:'Export → Quantification Cq Results (.csv)',
+ gdI4:'Analysis 화면 → 표 우클릭 → Export table. 저장한 파일을 엑셀에서 .xlsx로 다시 저장해서 올립니다.',
+ gdI5:'Export → Tabular Results (.csv)',
+ gdFoot:'목록에 없는 기기도 표 형태면 읽을 수 있습니다. 올린 뒤 컬럼 매핑에서 어느 열이 실험군, 유전자, Ct인지 직접 고르면 됩니다. 시트가 여러 개인 파일은 시트를 골라서 읽습니다.',
+
+ fileLead:'열린 파일', resetBtn:'처음으로',
+ lbRef:'Reference 유전자', lbCal:'Calibrator (1로 둘 기준군)', lbMode:'Replicate 짝짓기',
+ mSorted:'Ct 정렬 후 순위끼리', mWell:'well 순서대로', mNopair:'짝짓지 않음 (reference 평균 사용)',
+ lbOrder:'그래프 x축 순서. 칩을 끌어서 바꿉니다.',
+ mapSum:'컬럼 매핑 (헤더가 기기마다 다를 때)',
+ lbSheet:'시트', lbHdr:'헤더 행', lbSmp:'Sample (실험군)', lbTgt:'Target (유전자)',
+ lbCt:'Ct / Cq / Cp', lbWell:'Well (선택)',
+ mapAuto:'컬럼을 자동으로 찾았습니다. 값이 이상하면 여기서 직접 고르세요.',
+ mapFail:'컬럼을 자동으로 찾지 못했습니다. 실험군, 유전자, Ct가 어느 열인지 직접 골라 주세요.',
+ colNone:'없음', colN:n=>`(${n}열)`, rowN:n=>`${n}행`,
+
+ eyeQC:'Plate QC',
+ lgOk:'정상', lgHigh:'replicate 산포 큼 (SD > 0.5)', lgBad:'Ct > 35 또는 미검출', lgOff:'제외',
+ qcTip:'웰을 누르면 계산에서 빠지고, 다시 누르면 돌아옵니다.',
+ qcExcl:'경고 웰 모두 제외', qcIncl:'모두 되돌리기',
+ qcNone:'경고가 붙은 웰이 없습니다.',
+ qcOffOnly:n=>`${n}개 웰을 제외했고, 남은 웰에는 경고가 없습니다.`,
+ qcLate:n=>`Ct > 35 또는 미검출 ${n}개`, qcHigh:n=>`replicate 산포 큼 ${n}개`,
+ qcTail:'. 증폭 실패나 primer-dimer일 수 있으니 웰을 눌러 제외할지 정하세요.',
+ excluded:'(제외)',
+
+ eyeRes:'결과',
+ cvNote:'Technical replicate로 낸 p값은 스크리닝 용도입니다. n=3 정도에서는 검정력이 낮고 정규성도 확인할 수 없어서, 논문이나 발표에 실을 통계는 독립적으로 반복한 실험(biological replicate)으로 다시 확인해야 합니다.',
+ stDanger:'확인 필요', stCaution:'주의', stCalm:'참고',
+ alLateT:n=>`증폭에 실패했을 수 있는 웰이 ${n}개 있습니다`,
+ alLateB:'Ct가 35를 넘거나 검출되지 않았습니다. 발현이 실제로 줄었다기보다 primer-dimer나 반응 실패일 가능성이 큽니다. 지금은 아래 결과에 포함되어 있습니다.',
+ alLateBtn:'이 웰들 제외',
+ alHighT:n=>`replicate 산포가 큰 조합이 ${n}개 있습니다`,
+ alHighB:'같은 조건인데 Ct가 0.5 이상 벌어졌습니다. 피펫팅 오차나 outlier 웰일 수 있습니다.',
+ alOffT:n=>`${n}개 웰을 빼고 계산했습니다`,
+ alOffB:'남은 웰에는 경고가 없습니다. 어떤 웰을 뺐는지는 Methods에 적어야 합니다.',
+
+ thGroup:'Group', thNorm:'Norm.', thSD:'SD', thP:'p (Holm)', thN:'n',
+ refBase:'기준',
+ anovaOk:(f,d1,d2,p,sig)=>`ANOVA F(${d1}, ${d2}) = ${f}, p ${String(p).startsWith('<')?'< '+String(p).slice(1):'= '+p}. ${sig?'군 사이에 유의한 차이가 있습니다.':'군 사이에 유의한 차이가 없습니다.'}`,
+ anovaNo:'ANOVA는 replicate가 부족해서 계산하지 못했습니다.',
+ noCal:c=>`Calibrator(${c})에 남은 replicate가 없습니다.`,
+ noTgt:'Reference 말고는 분석할 유전자가 없습니다.',
+ traceSum:'계산 과정 보기 (replicate별)',
+ trRep:'rep', trMeanCt:r=>`평균 Ct ${r}`, trCt:r=>`Ct ${r}`,
+ trNoRep:'남은 replicate 없음',
+ tr1Nopair:(t,r)=>`① ∆Cp = Ct<sub>${t}</sub> − ${r}의 평균 (짝짓지 않음)`,
+ tr1Sorted:(t,r)=>`① ∆Cp = Ct<sub>${t}</sub> − Ct<sub>${r}</sub> (그룹 안에서 각각 오름차순 정렬한 뒤 같은 순위끼리)`,
+ tr1Well:(t,r)=>`① ∆Cp = Ct<sub>${t}</sub> − Ct<sub>${r}</sub> (well 순서대로 같은 행끼리)`,
+ tr2:(v,c)=>`② ∆∆Cp = ∆Cp − ${v} (${c}의 ∆Cp 평균)`,
+ tr3:(v,c)=>`③ Normalized = 2^(−∆∆Cp) ÷ ${v} (${c}의 2^(−∆∆Cp) 평균). 그래서 ${c}은 정확히 1이 됩니다.`,
+
+ eyeCmp:'짝짓기 방식 비교',
+ cmpIntro:'Technical replicate는 서로 바꿔도 되는 값이라 어떻게 짝지어도 평균은 같고, SD와 p값만 달라집니다. Ct를 정렬해서 짝지으면 큰 값은 큰 값끼리, 작은 값은 작은 값끼리 묶여 차이가 상쇄되므로 SD가 실제보다 작게 나옵니다.',
+ cmpFoot:'짝짓지 않는 방식은 각 target replicate에서 reference 평균을 빼기 때문에 짝짓는 순서를 고를 일이 없고, SD에 target의 실제 변동이 그대로 남습니다. 그래서 통계를 설명하기가 가장 쉽습니다. 붉은 글자는 세 방식 중 평균 SD가 가장 작은 값입니다.',
+ cmpC1:'유전자', cmpC2:'방식', cmpC3:'Norm. 평균 범위', cmpC4:'평균 SD', cmpC5:'ANOVA p', cmpC6:'유의한 군',
+ cmpSel:' (선택됨)',
+ cmpM1:'Ct 정렬 후 짝짓기', cmpM2:'well 순서 짝짓기', cmpM3:'짝짓지 않음',
+
+ expXlsx:'엑셀 저장 (수식, 통계 포함)', expCsv:'요약 CSV', expPptx:'PPT 저장',
+ expPptxNote:'PPT 차트는 차트 개체로 들어가서 축, 색, 라벨을 PowerPoint에서 바로 고칠 수 있습니다.',
+
+ ftCalcT:'계산',
+ ftCalc:'Reference로 정규화한 뒤 calibrator를 1로 두는 2<sup>−∆∆Ct</sup>(Livak) 방식입니다. Replicate는 Ct 정렬 후 짝짓기, well 순서 짝짓기, 짝짓지 않고 reference 평균 빼기 중 하나로 처리합니다. Technical replicate는 서로 바꿔도 되는 값이라 세 방식의 평균은 같고 SD와 p값만 달라집니다. 막대는 정규화값 평균, 오차막대는 위에서 고른 SD 또는 SEM(표본 기준, n−1), 점은 각 replicate입니다.',
+ ftStatT:'통계',
+ ftStat:'Fold-change(2<sup>−∆∆Ct</sup>)는 로그 값을 지수로 되돌린 것이라 분포가 한쪽으로 치우칩니다. 그래서 검정은 ∆Cp 값으로 했습니다. 각 군과 calibrator는 Welch t-검정으로 비교하고 Holm 방법으로 다중비교를 보정했으며, 전체 군 사이 차이는 일원배치 ANOVA로 봤습니다. * p &lt; 0.05, ** p &lt; 0.01, *** p &lt; 0.001.',
+ ftEffT:'가정',
+ ftEff:'2<sup>−∆∆Ct</sup>는 target과 reference의 증폭 효율이 같고 100%에 가깝다고 가정합니다. 표준곡선으로 잰 효율이 두 유전자 사이에 크게 다르면 Pfaffl 보정을 고려해야 합니다. Reference 유전자가 모든 군에서 일정하다는 가정도 있어서 Reference 안정성 표를 함께 봐야 합니다.',
+
+ errRead:'파일을 읽지 못했습니다. .xlsx, .xls, .csv 파일인지 확인해 주세요.',
+ errSheet:'시트가 없습니다.',
+ errEmpty:'빈 시트입니다. 다른 시트를 골라 보세요.',
+ errRows:'데이터 행을 읽지 못했습니다. 위 컬럼 매핑에서 시트, 헤더 행, 컬럼을 확인해 주세요.',
+ errRetry:'다시 시도하려면 누르세요.',
+ demoName:'예시 데이터 (가상)',
+ chartY:'Relative mRNA level', chartX:'Group',
+ chartTitle:(t,r,c)=>`${t} — ΔΔCt`,
+ xlNote:'검정은 ∆Cp 값으로 수행 (Welch t-test, Holm 보정)',
+ xlSummary:'Summary', xlSig:'sig',
+ eyeGrp:'군별 요약',
+ grpNote:'칸의 값은 정규화값 평균 ± 오차이고, 별표는 calibrator와 비교한 Holm 보정 p값입니다. 표 복사를 누르면 탭으로 구분된 표가 복사되어 엑셀이나 PPT 표에 그대로 붙습니다.',
+ grpCopy:'표 복사', grpCopied:'복사했습니다',
+ pptSum:'군별 요약',
+ pptSub:o=>`${o.ref} 정규화 · calibrator ${o.cal} = 1 · 오차막대 ${o.err} · n = ${o.n}`,
+ pptAxis:'Relative mRNA level',
+ xlByGroup:'군별요약',
+
+ lbErr:'오차막대',
+ errSD:'SD (표준편차)', errSEM:'SEM (표준오차)',
+ sdShort:'SD', semShort:'SEM',
+
+ eyeRef:'Reference 안정성',
+ refIntro:'∆∆Ct는 reference 유전자가 모든 실험군에서 일정하다는 전제를 둡니다. 처리 때문에 reference가 변했다면 정규화가 결과를 바로잡지 못하고 오히려 왜곡합니다. 아래 표는 보정하지 않은 원본 Ct입니다.',
+ refC1:'Group', refC2:'평균 Ct', refC3:'SD', refC4:'전체 평균과의 차이', refC5:'n',
+ lvOk:'안정', lvWarn:'경계', lvBad:'확인 필요',
+ refOk:sp=>`군 사이 최대 편차는 ${sp} Ct입니다. 정규화 전제가 성립하는 범위입니다.`,
+ refWarn:sp=>`군 사이 최대 편차는 ${sp} Ct입니다. 0.5를 넘어서 해석할 때 주의가 필요합니다.`,
+ refBad:(sp,fold)=>`군 사이 최대 편차는 ${sp} Ct(약 ${fold}배)입니다. Reference가 군에 따라 변하고 있습니다.`,
+ refWhy:'Reference 유전자가 처리에 반응했거나, RNA 양이나 역전사 효율이 군마다 달랐을 수 있습니다. 다른 housekeeping 유전자를 쓰거나 여러 유전자의 기하평균으로 정규화하는 방법을 검토하세요. 아래 결과는 이 전제가 맞을 때만 유효합니다.',
+ alRefT:(g,sp)=>`Reference 유전자 ${g}의 Ct가 군에 따라 ${sp}만큼 다릅니다`,
+ alRefB:'∆∆Ct는 reference가 모든 군에서 일정하다고 가정합니다. 이 가정이 깨지면 정규화가 결과를 왜곡할 수 있으니 위 Reference 안정성 표를 확인하세요.',
+
+ eyeLeg:'Figure legend와 Methods',
+ legIntro:'지금 설정을 문장으로 옮겼습니다. 실제 실험 조건에 맞게 고쳐서 쓰세요.',
+ legCopy:'복사', legCopied:'복사했습니다',
+ legText:o=>`상대 발현량은 2^(−∆∆Ct) 방법으로 산출하였다. Reference 유전자는 ${o.ref}, calibrator는 ${o.cal}이다. ${o.modeNote}. 막대는 평균 ± ${o.err}이며 (n = ${o.n}), 점은 개별 technical replicate를 나타낸다. ${o.cal} 대비 각 군의 유의성은 ∆Cp 값에 대한 Welch t-검정으로 평가하였고, 다중비교는 Holm 방법으로 보정하였다 (*p < 0.05, **p < 0.01, ***p < 0.001). 군간 전체 차이는 일원배치 분산분석으로 검정하였다.${o.excl}`,
+ legMode:{sorted:'∆Cp는 각 군 내에서 target과 reference의 Ct를 각각 오름차순 정렬한 뒤 같은 순위끼리 짝지어 계산하였다', well:'∆Cp는 well 순서에 따라 target과 reference의 Ct를 짝지어 계산하였다', nopair:'∆Cp는 각 target replicate의 Ct에서 해당 군 reference Ct의 평균을 빼어 계산하였다'},
+ legExcl:(n,list)=>` ${n}개 웰(${list})은 증폭 실패 또는 과도한 replicate 산포로 분석에서 제외하였다.`,
+
+ xlQC:'QC', xlSettings:'설정', xlWell:'Well', xlStatus:'상태', xlFlag:'플래그',
+ xlIncluded:'포함', xlExcluded:'제외',
+ xlFlagLate:'Ct>35 / 미검출', xlFlagHigh:'rep 산포 큼', xlFlagNone:'—',
+ xlRefStab:'Reference 안정성', xlSpread:'군간 최대 편차 (Ct)',
+},
+en:{
+ title:'ΔΔCt qPCR analyzer',
+ sub:'Relative qPCR expression',
+ eq:'∆Cp = Ct<sub>target</sub> − Ct<sub>ref</sub><span class="ar">→</span>∆∆Cp = ∆Cp − ∆Cp<sub>cal</sub><span class="ar">→</span>2<sup>−∆∆Cp</sup>',
+ homeTip:'Back to the start',
+ dropH:'Drop a results file here, or click to choose one',
+ dropP:'Reads .xlsx, .xls and .csv exports from QuantStudio, SDS, LightCycler and similar software.',
+ dropPriv:'The file is read inside this browser and is not sent anywhere. A content security policy blocks outgoing requests.',
+ demoLead:'Without a file, you can look around with synthetic data.',
+ demoBtn:'Open example data',
+
+ gdEye:'What to upload',
+ gdIntro:'Upload the results table exported from your instrument software, without editing it. Column names can differ between instruments; the app only needs the information below.',
+ gdSample:'Group name, e.g. Control, Drug 10uM',
+ gdTarget:'Gene name, e.g. GAPDH, TNF',
+ gdCt:'Ct value, e.g. 15.38, 22.06',
+ gdWellEx:'Optional. Used to draw the plate layout.',
+ gdWarnT:'Each replicate needs its own row',
+ gdWarnB:'With 3 replicates, the same group and gene must appear on 3 rows so that SD and p-values can be computed. A pre-averaged Ct Mean table cannot be used.',
+ gdInstrEye:'Where each instrument exports',
+ gdC1:'Instrument, software', gdC2:'How to export', gdC3:'Ct column',
+ gdI1:'Design &amp; Analysis or QuantStudio SW → Export → Results (.xlsx)',
+ gdI2:'File → Export → Results (.xls)',
+ gdI3:'Export → Quantification Cq Results (.csv)',
+ gdI4:'Analysis view → right-click the table → Export table. Open the file in Excel and save it as .xlsx before uploading.',
+ gdI5:'Export → Tabular Results (.csv)',
+ gdFoot:'Instruments not listed here work too, as long as the export is a table. After uploading, choose which column holds the group, gene and Ct under Column mapping. For files with several sheets you can pick the sheet.',
+
+ fileLead:'Open file', resetBtn:'Start over',
+ lbRef:'Reference gene', lbCal:'Calibrator (group set to 1)', lbMode:'Replicate pairing',
+ mSorted:'Sort Ct, pair by rank', mWell:'Pair by well order', mNopair:'No pairing (use reference mean)',
+ lbOrder:'X-axis order. Drag the chips to change it.',
+ mapSum:'Column mapping (when headers differ by instrument)',
+ lbSheet:'Sheet', lbHdr:'Header row', lbSmp:'Sample (group)', lbTgt:'Target (gene)',
+ lbCt:'Ct / Cq / Cp', lbWell:'Well (optional)',
+ mapAuto:'Columns were detected automatically. If a value looks wrong, choose it here.',
+ mapFail:'Columns could not be detected. Please choose which column holds the group, gene and Ct.',
+ colNone:'None', colN:n=>`(column ${n})`, rowN:n=>`row ${n}`,
+
+ eyeQC:'Plate QC',
+ lgOk:'OK', lgHigh:'High replicate spread (SD > 0.5)', lgBad:'Ct > 35 or undetermined', lgOff:'Excluded',
+ qcTip:'Click a well to leave it out of the calculation; click again to bring it back.',
+ qcExcl:'Exclude all flagged wells', qcIncl:'Restore all',
+ qcNone:'No wells are flagged.',
+ qcOffOnly:n=>`${n} well${n>1?'s':''} excluded; no flags among the rest.`,
+ qcLate:n=>`${n} with Ct > 35 or undetermined`, qcHigh:n=>`${n} with high replicate spread`,
+ qcTail:'. These may be failed reactions or primer-dimers; click a well to exclude it.',
+ excluded:'(excluded)',
+
+ eyeRes:'Results',
+ cvNote:'p-values from technical replicates are for screening only. At around n=3 the power is low and normality cannot be checked, so statistics for a paper or talk need to be confirmed with independently repeated experiments (biological replicates).',
+ stDanger:'Check', stCaution:'Caution', stCalm:'Note',
+ alLateT:n=>`${n} well${n>1?'s':''} may have failed to amplify`,
+ alLateB:'Ct exceeded 35 or nothing was detected. A failed reaction or primer-dimer is more likely than a real drop in expression. These wells are currently included in the results below.',
+ alLateBtn:'Exclude these wells',
+ alHighT:n=>`${n} combination${n>1?'s':''} with high replicate spread`,
+ alHighB:'Ct values differ by more than 0.5 within the same condition. This can come from pipetting error or an outlier well.',
+ alOffT:n=>`Calculated with ${n} well${n>1?'s':''} excluded`,
+ alOffB:'No flags remain among the included wells. List the excluded wells in your Methods.',
+
+ thGroup:'Group', thNorm:'Norm.', thSD:'SD', thP:'p (Holm)', thN:'n',
+ refBase:'ref',
+ anovaOk:(f,d1,d2,p,sig)=>`ANOVA F(${d1}, ${d2}) = ${f}, p ${String(p).startsWith('<')?'< '+String(p).slice(1):'= '+p}. ${sig?'The groups differ significantly.':'No significant difference between groups.'}`,
+ anovaNo:'ANOVA could not be computed because there are not enough replicates.',
+ noCal:c=>`No replicates remain in the calibrator (${c}).`,
+ noTgt:'There are no genes to analyse besides the reference.',
+ traceSum:'Show the calculation (per replicate)',
+ trRep:'rep', trMeanCt:r=>`mean Ct ${r}`, trCt:r=>`Ct ${r}`,
+ trNoRep:'no replicates left',
+ tr1Nopair:(t,r)=>`① ∆Cp = Ct<sub>${t}</sub> − mean of ${r} (no pairing)`,
+ tr1Sorted:(t,r)=>`① ∆Cp = Ct<sub>${t}</sub> − Ct<sub>${r}</sub> (each sorted ascending within the group, then matched by rank)`,
+ tr1Well:(t,r)=>`① ∆Cp = Ct<sub>${t}</sub> − Ct<sub>${r}</sub> (matched by well order)`,
+ tr2:(v,c)=>`② ∆∆Cp = ∆Cp − ${v} (mean ∆Cp of ${c})`,
+ tr3:(v,c)=>`③ Normalized = 2^(−∆∆Cp) ÷ ${v} (mean 2^(−∆∆Cp) of ${c}), so ${c} becomes exactly 1.`,
+
+ eyeCmp:'Pairing methods compared',
+ cmpIntro:'Technical replicates are exchangeable, so every pairing gives the same mean; only the SD and p-values change. Sorting Ct before pairing matches high values with high and low with low, which cancels part of the variation and makes the SD smaller than it really is.',
+ cmpFoot:'No pairing subtracts the reference mean from each target replicate, so there is no pairing order to choose and the SD keeps the real variation of the target. That makes it the easiest method to justify. Red marks the smallest mean SD of the three methods.',
+ cmpC1:'Gene', cmpC2:'Method', cmpC3:'Norm. mean range', cmpC4:'Mean SD', cmpC5:'ANOVA p', cmpC6:'Significant',
+ cmpSel:' (selected)',
+ cmpM1:'Sorted pairing', cmpM2:'Well-order pairing', cmpM3:'No pairing',
+
+ expXlsx:'Save Excel (formulas, statistics)', expCsv:'Summary CSV', expPptx:'Save PowerPoint',
+ expPptxNote:'Charts go into PowerPoint as chart objects, so axes, colours and labels can be edited there.',
+
+ ftCalcT:'Calculation',
+ ftCalc:'Standard 2<sup>−∆∆Ct</sup> (Livak): normalize to the reference, then set the calibrator to 1. Replicates are handled one of three ways: sort Ct and pair by rank, pair by well order, or skip pairing and subtract the reference mean from each target replicate. Technical replicates are exchangeable, so all three give the same mean and only the SD and p-values differ. Bars show the mean normalized value, error bars the SD or SEM chosen above (sample-based, n−1), and dots the individual replicates.',
+ ftStatT:'Statistics',
+ ftStat:'Fold-change (2<sup>−∆∆Ct</sup>) is a log-scale value exponentiated back, so its distribution is skewed. Tests are therefore run on ∆Cp values. Each group is compared with the calibrator by Welch’s t-test with Holm correction for multiple comparisons, and overall group differences by one-way ANOVA. * p &lt; 0.05, ** p &lt; 0.01, *** p &lt; 0.001.',
+ ftEffT:'Assumptions',
+ ftEff:'2<sup>−∆∆Ct</sup> assumes the target and reference amplify with equal, near-100% efficiency. If efficiencies measured from standard curves differ substantially, consider the Pfaffl correction. It also assumes the reference gene is constant across groups, so check the Reference stability table.',
+
+ errRead:'Could not read the file. Please check that it is an .xlsx, .xls or .csv file.',
+ errSheet:'No sheets found.',
+ errEmpty:'This sheet is empty. Try another sheet.',
+ errRows:'No data rows were found. Check the sheet, header row and columns under Column mapping above.',
+ errRetry:'Click to try again.',
+ demoName:'Example data (synthetic)',
+ chartY:'Relative mRNA level', chartX:'Group',
+ chartTitle:(t,r,c)=>`${t} — ΔΔCt`,
+ xlNote:'Tests performed on ∆Cp values (Welch t-test, Holm correction)',
+ xlSummary:'Summary', xlSig:'sig',
+ eyeGrp:'Summary by group',
+ grpNote:'Each cell is the mean normalized value ± error; asterisks are Holm-adjusted p-values against the calibrator. Copy table puts a tab-separated table on the clipboard that pastes into Excel or a PowerPoint table.',
+ grpCopy:'Copy table', grpCopied:'Copied',
+ pptSum:'Summary by group',
+ pptSub:o=>`Normalized to ${o.ref} · calibrator ${o.cal} = 1 · error bars ${o.err} · n = ${o.n}`,
+ pptAxis:'Relative mRNA level',
+ xlByGroup:'By group',
+
+ lbErr:'Error bars',
+ errSD:'SD (standard deviation)', errSEM:'SEM (standard error)',
+ sdShort:'SD', semShort:'SEM',
+
+ eyeRef:'Reference stability',
+ refIntro:'∆∆Ct assumes the reference gene is constant across all groups. If the treatment changed the reference, normalizing to it distorts the result instead of correcting it. The table shows raw, uncorrected Ct values.',
+ refC1:'Group', refC2:'Mean Ct', refC3:'SD', refC4:'vs overall mean', refC5:'n',
+ lvOk:'Stable', lvWarn:'Borderline', lvBad:'Check',
+ refOk:sp=>`The largest difference between groups is ${sp} Ct, within the range where the normalization assumption holds.`,
+ refWarn:sp=>`The largest difference between groups is ${sp} Ct. It is above 0.5, so interpret the results with care.`,
+ refBad:(sp,fold)=>`The largest difference between groups is ${sp} Ct (about ${fold}-fold). The reference is shifting between groups.`,
+ refWhy:'The reference gene may be responding to the treatment, or RNA input and reverse-transcription efficiency may have differed between groups. Consider a different housekeeping gene, or normalizing to the geometric mean of several. The results below are only valid under this assumption.',
+ alRefT:(g,sp)=>`Reference gene ${g} differs by ${sp} Ct between groups`,
+ alRefB:'∆∆Ct assumes the reference is constant across groups. When that breaks, normalization can distort the result, so check the Reference stability table above.',
+
+ eyeLeg:'Figure legend and Methods',
+ legIntro:'Your current settings written out as text. Adjust it to your actual experimental conditions before use.',
+ legCopy:'Copy', legCopied:'Copied',
+ legText:o=>`Relative mRNA expression was quantified using the 2^(−∆∆Ct) method, with ${o.ref} as the reference gene and ${o.cal} as the calibrator. ${o.modeNote}. Bars represent the mean ± ${o.err} (n = ${o.n}), and dots indicate individual technical replicates. Differences from ${o.cal} were assessed by Welch’s t-test on ∆Cp values, with Holm correction for multiple comparisons (*p < 0.05, **p < 0.01, ***p < 0.001). Overall differences among groups were tested by one-way ANOVA.${o.excl}`,
+ legMode:{sorted:'∆Cp was calculated by sorting the target and reference Ct values within each group in ascending order and pairing them by rank', well:'∆Cp was calculated by pairing target and reference Ct values in well order', nopair:'∆Cp was calculated by subtracting the mean reference Ct of each group from every target replicate'},
+ legExcl:(n,list)=>` ${n} well${n>1?'s':''} (${list}) ${n>1?'were':'was'} excluded owing to amplification failure or excessive replicate spread.`,
+
+ xlQC:'QC', xlSettings:'Settings', xlWell:'Well', xlStatus:'Status', xlFlag:'Flag',
+ xlIncluded:'included', xlExcluded:'excluded',
+ xlFlagLate:'Ct>35 / undetermined', xlFlagHigh:'high replicate spread', xlFlagNone:'—',
+ xlRefStab:'Reference stability', xlSpread:'Largest spread between groups (Ct)',
+}
+};
+let LANG = (navigator.language||'en').toLowerCase().startsWith('ko') ? 'ko' : 'en';
+const T=(k,...a)=>{ const v=I18N[LANG][k]; return typeof v==='function'? v(...a) : v; };
+
+
+/** 정적 텍스트를 현재 언어로 칠한다 */
+function applyLang(){
+  document.documentElement.lang=LANG;
+  document.title=T('title');
+  document.querySelectorAll('[data-i]').forEach(el=>{
+    const v=T(el.dataset.i);
+    if(typeof v==='string') el.innerHTML=v;
+  });
+  document.querySelectorAll('[data-i-title]').forEach(el=>{
+    el.title=T(el.dataset.iTitle);
+  });
+  document.querySelectorAll('[data-i-aria]').forEach(el=>{
+    el.setAttribute('aria-label',T(el.dataset.iAria));
+  });
+  document.querySelectorAll('.lang button').forEach(b=>
+    b.setAttribute('aria-pressed', String(b.dataset.lang===LANG)));
+}
+function setLang(l){
+  if(l===LANG) return;
+  const wasDemo = FNAME===T('demoName');
+  LANG=l;
+  if(wasDemo) FNAME=T('demoName');
+  applyLang();
+  if(RAW.length){ if(FNAME) document.getElementById('fname').textContent=FNAME; render(); }
+}
+document.querySelectorAll('.lang button').forEach(b=>{ b.onclick=()=>setLang(b.dataset.lang); });
+applyLang();
+
+
+/* ============ 통계 함수 ============ */
+function gammaln(x){
+  const c=[76.18009172947146,-86.50532032941677,24.01409824083091,
+           -1.231739572450155,0.1208650973866179e-2,-0.5395239384953e-5];
+  let y=x, t=x+5.5; t-=(x+0.5)*Math.log(t);
+  let s=1.000000000190015;
+  for(let j=0;j<6;j++) s+=c[j]/++y;
+  return -t+Math.log(2.5066282746310005*s/x);
+}
+function betacf(a,b,x){
+  const M=200, EPS=3e-14, FPMIN=1e-300;
+  const qab=a+b, qap=a+1, qam=a-1;
+  let c=1, d=1-qab*x/qap;
+  if(Math.abs(d)<FPMIN) d=FPMIN;
+  d=1/d; let h=d;
+  for(let m=1;m<=M;m++){
+    const m2=2*m;
+    let aa=m*(b-m)*x/((qam+m2)*(a+m2));
+    d=1+aa*d; if(Math.abs(d)<FPMIN)d=FPMIN;
+    c=1+aa/c; if(Math.abs(c)<FPMIN)c=FPMIN;
+    d=1/d; h*=d*c;
+    aa=-(a+m)*(qab+m)*x/((a+m2)*(qap+m2));
+    d=1+aa*d; if(Math.abs(d)<FPMIN)d=FPMIN;
+    c=1+aa/c; if(Math.abs(c)<FPMIN)c=FPMIN;
+    d=1/d;
+    const del=d*c; h*=del;
+    if(Math.abs(del-1)<EPS) break;
+  }
+  return h;
+}
+function betai(a,b,x){
+  if(x<=0) return 0;
+  if(x>=1) return 1;
+  const bt=Math.exp(gammaln(a+b)-gammaln(a)-gammaln(b)+a*Math.log(x)+b*Math.log(1-x));
+  return (x < (a+1)/(a+b+2)) ? bt*betacf(a,b,x)/a : 1-bt*betacf(b,a,1-x)/b;
+}
+const tP=(t,df)=> (!isFinite(t)||df<=0) ? NaN : betai(df/2, .5, df/(df+t*t));   // 양측
+const fP=(f,d1,d2)=> (!isFinite(f)||f<=0||d1<=0||d2<=0) ? NaN : betai(d2/2, d1/2, d2/(d2+d1*f));
+
+const mean=a=>a.reduce((x,y)=>x+y,0)/a.length;
+const vari=a=>{ if(a.length<2) return NaN; const m=mean(a);
+  return a.reduce((s,x)=>s+(x-m)**2,0)/(a.length-1); };
+const sd=a=>Math.sqrt(vari(a));
+
+/** Welch t-검정 */
+function welch(x,y){
+  if(x.length<2||y.length<2) return {t:NaN,df:NaN,p:NaN};
+  const vx=vari(x)/x.length, vy=vari(y)/y.length;
+  const se=Math.sqrt(vx+vy);
+  if(!(se>0)) return {t:NaN,df:NaN,p:NaN};
+  const t=(mean(x)-mean(y))/se;
+  const df=(vx+vy)**2 / ((vx**2)/(x.length-1) + (vy**2)/(y.length-1));
+  return {t, df, p:tP(t,df)};
+}
+/** 일원배치 ANOVA */
+function anova(groups){
+  const gs=groups.filter(g=>g.length>=2);
+  if(gs.length<2) return {F:NaN,df1:NaN,df2:NaN,p:NaN};
+  const all=gs.flat(), gm=mean(all), k=gs.length, N=all.length;
+  const ssb=gs.reduce((s,g)=>s+g.length*(mean(g)-gm)**2,0);
+  const ssw=gs.reduce((s,g)=>{const m=mean(g);return s+g.reduce((a,x)=>a+(x-m)**2,0);},0);
+  const df1=k-1, df2=N-k;
+  if(df2<=0||ssw<=0) return {F:NaN,df1,df2,p:NaN};
+  const Fv=(ssb/df1)/(ssw/df2);
+  return {F:Fv, df1, df2, p:fP(Fv,df1,df2)};
+}
+/** Holm 보정 */
+function holm(ps){
+  const idx=ps.map((p,i)=>[p,i]).filter(x=>isFinite(x[0])).sort((a,b)=>a[0]-b[0]);
+  const m=idx.length, out=ps.map(()=>NaN);
+  let prev=0;
+  idx.forEach(([p,i],r)=>{ const adj=Math.min(1,Math.max(prev,(m-r)*p)); out[i]=adj; prev=adj; });
+  return out;
+}
+const stars=p=> !isFinite(p) ? '' : p<0.001?'***' : p<0.01?'**' : p<0.05?'*' : 'ns';
+const pTxt=p=> !isFinite(p) ? '—' : p<0.0001 ? '<0.0001' : p.toFixed(4);
+
+/* ============ 파일 입력 ============ */
+const drop=document.getElementById('drop'), fileIn=document.getElementById('file');
+drop.onclick=()=>fileIn.click();
+drop.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();fileIn.click();}};
+drop.ondragover=e=>{e.preventDefault();drop.classList.add('over')};
+drop.ondragleave=()=>drop.classList.remove('over');
+drop.ondrop=e=>{e.preventDefault();drop.classList.remove('over');if(e.dataTransfer.files[0])read(e.dataTransfer.files[0]);};
+fileIn.onchange=e=>{if(e.target.files[0])read(e.target.files[0]);};
+document.getElementById('demo').onclick=()=>{
+  ROWS=[['Well Position','Sample Name','Target Name','CT'],...DEMO];
+  MAP={hdr:0,smp:1,tgt:2,ct:3,well:0}; FNAME=T('demoName'); WB=null;
+  document.getElementById('sheetfield').style.display='none';
+  buildMapUI(true); ingest();
+};
+function goHome(){
+  WB=null; ROWS=[]; RAW=[]; EXCLUDED=new Set(); ORDER=[]; FNAME='';
+  MAP={hdr:-1,smp:-1,tgt:-1,ct:-1,well:-1};
+  fileIn.value='';
+  document.getElementById('app').classList.add('hidden');
+  document.getElementById('landing').classList.remove('hidden');
+  document.getElementById('genes').innerHTML='';
+  document.getElementById('plate').innerHTML='';
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+document.getElementById('reset').onclick=goHome;
+const homeBtn=document.getElementById('home');
+homeBtn.onclick=e=>{ e.preventDefault(); if(!document.getElementById('app').classList.contains('hidden')) goHome(); };
+
+function read(file){
+  FNAME=file.name;
+  const fr=new FileReader();
+  fr.onload=ev=>{
+    try{ WB=XLSX.read(new Uint8Array(ev.target.result),{type:'array'}); }
+    catch(e){ return fail(T('errRead')); }
+    if(!WB.SheetNames.length) return fail(T('errSheet'));
+    const best=pickSheet();          // Sample/Target/Ct 가 있는 시트를 우선 선택
+    loadSheet(best, true);
+  };
+  fr.readAsArrayBuffer(file);
+}
+/** 필요한 컬럼이 있는 시트를 점수로 골라냄 */
+function pickSheet(){
+  let best=WB.SheetNames[0], bestScore=-1;
+  WB.SheetNames.forEach(nm=>{
+    const rows=XLSX.utils.sheet_to_json(WB.Sheets[nm],{header:1,defval:null,raw:true});
+    let sc=0;
+    for(let i=0;i<Math.min(rows.length,60);i++){
+      const r=(rows[i]||[]).map(norm);
+      const hit=['samplename','sample','targetname','target','detector','ct','cq','cp']
+        .filter(k=>r.includes(k)).length;
+      sc=Math.max(sc,hit);
+    }
+    sc+=Math.min(rows.length,500)/10000;   // 동점이면 행 많은 쪽
+    if(sc>bestScore){ bestScore=sc; best=nm; }
+  });
+  return best;
+}
+function loadSheet(name, auto){
+  ROWS=XLSX.utils.sheet_to_json(WB.Sheets[name],{header:1,defval:null,raw:true});
+  if(!ROWS.length){ document.getElementById('genes').innerHTML=
+    `<p class="msg">${T('errEmpty')}</p>`; }
+  if(auto) autoMap();
+  buildSheetUI(name);
+  buildMapUI(MAP.hdr>=0 && MAP.smp>=0 && MAP.tgt>=0 && MAP.ct>=0);
+  ingest();
+}
+function buildSheetUI(cur){
+  const f=document.getElementById('sheetfield');
+  const sel=document.getElementById('m-sheet');
+  if(!WB || WB.SheetNames.length<2){ f.style.display='none'; return; }
+  f.style.display='';
+  sel.innerHTML=WB.SheetNames.map(n=>`<option ${n===cur?'selected':''}>${esc(n)}</option>`).join('');
+  sel.onchange=()=>loadSheet(sel.value, true);
+}
+function fail(msg){
+  document.getElementById('drop').innerHTML=
+    '<h2 class="err">'+msg+'</h2><p>'+T('errRetry')+'</p>';
+  document.getElementById('drop').onclick=()=>location.reload();
+}
+const norm=s=>String(s??'').trim().toLowerCase().replace(/[\s_.\-()]/g,'');
+
+/** 헤더 행 + 컬럼 자동 추론 */
+function autoMap(){
+  MAP={hdr:-1,smp:-1,tgt:-1,ct:-1,well:-1};
+  const S=['samplename','sample','samplen','name','sampleid'];
+  const T=['targetname','target','detector','detectorname','gene','genename','assay'];
+  const C=['ct','cq','cp','crossingpoint','ctmean','cqmean','cttext'];
+  const W=['wellposition','well','pos','position'];
+  let best=null;
+  for(let i=0;i<Math.min(ROWS.length,100);i++){
+    const r=(ROWS[i]||[]).map(norm);
+    const pick=list=>{ for(const key of list){ const j=r.indexOf(key); if(j>=0) return j; } return -1; };
+    const s=pick(S), t=pick(T), c=pick(C);
+    const score=(s>=0?2:0)+(t>=0?2:0)+(c>=0?2:0);
+    if(score>(best?best.score:0)){ best={i,s,t,c,w:pick(W),score}; }
+    if(score===6) break;
+  }
+  if(best && best.score>=4){
+    MAP={hdr:best.i, smp:best.s, tgt:best.t, ct:best.c, well:best.w};
+  }else{
+    MAP.hdr = ROWS.findIndex(r=>(r||[]).filter(x=>x!=null&&String(x).trim()!=='').length>=3);
+    if(MAP.hdr<0) MAP.hdr=0;
+  }
+}
+
+/** 매핑 UI 구성 */
+function buildMapUI(autoOK){
+  const hdrSel=document.getElementById('m-hdr');
+  const maxScan=Math.min(ROWS.length,60);
+  hdrSel.innerHTML='';
+  for(let i=0;i<maxScan;i++){
+    const preview=(ROWS[i]||[]).slice(0,5).map(v=>v==null?'':String(v)).join(' | ').slice(0,46);
+    if(!preview.trim()) continue;
+    hdrSel.insertAdjacentHTML('beforeend',
+      `<option value="${i}">${T('rowN',i+1)} — ${esc(preview)}</option>`);
+  }
+  hdrSel.value=MAP.hdr;
+  hdrSel.onchange=()=>{ MAP.hdr=+hdrSel.value; fillColSelects(); ingest(); };
+  fillColSelects();
+  ['m-smp','m-tgt','m-ct','m-well'].forEach(id=>{
+    document.getElementById(id).onchange=()=>{
+      MAP.smp=+document.getElementById('m-smp').value;
+      MAP.tgt=+document.getElementById('m-tgt').value;
+      MAP.ct =+document.getElementById('m-ct').value;
+      MAP.well=+document.getElementById('m-well').value;
+      ingest();
+    };
+  });
+  const box=document.getElementById('mapbox');
+  const hint=document.getElementById('maphint');
+  if(autoOK){
+    box.open=false;
+    hint.textContent=T('mapAuto');
+  }else{
+    box.open=true;
+    hint.textContent=T('mapFail');
+  }
+}
+function fillColSelects(){
+  const hdr=(ROWS[MAP.hdr]||[]);
+  const ncol=Math.max(hdr.length, ...ROWS.slice(MAP.hdr,MAP.hdr+12).map(r=>(r||[]).length));
+  const opts=(withNone)=>{
+    let s = withNone ? `<option value="-1">${T('colNone')}</option>` : '';
+    for(let j=0;j<ncol;j++){
+      const nm=hdr[j]==null||String(hdr[j]).trim()===''
+        ? T('colN', String.fromCharCode(65+(j%26))) : String(hdr[j]).trim();
+      s+=`<option value="${j}">${esc(nm)}</option>`;
+    }
+    return s;
+  };
+  const set=(id,val,withNone)=>{
+    const el=document.getElementById(id);
+    el.innerHTML=opts(withNone);
+    el.value=(val>=0&&val<ncol)?val:(withNone?-1:0);
+  };
+  set('m-smp',MAP.smp,false); set('m-tgt',MAP.tgt,false);
+  set('m-ct',MAP.ct,false);   set('m-well',MAP.well,true);
+  MAP.smp=+document.getElementById('m-smp').value;
+  MAP.tgt=+document.getElementById('m-tgt').value;
+  MAP.ct =+document.getElementById('m-ct').value;
+  MAP.well=+document.getElementById('m-well').value;
+}
+
+/** 매핑대로 데이터 읽기 */
+function ingest(){
+  RAW=[]; let n=0;
+  for(let i=MAP.hdr+1;i<ROWS.length;i++){
+    const r=ROWS[i]||[];
+    const smp=r[MAP.smp], tgt=r[MAP.tgt];
+    if(smp==null||tgt==null) continue;
+    const S=String(smp).trim(), T=String(tgt).trim();
+    if(!S||!T) continue;
+    const ct=parseFloat(r[MAP.ct]);
+    const undet=!isFinite(ct);
+    RAW.push({key:'w'+(n++), well:MAP.well>=0&&r[MAP.well]!=null?String(r[MAP.well]).trim():'',
+      sample:S, target:T, ct:undet?NaN:ct, undet});
+  }
+  if(RAW.length<2){
+    document.getElementById('app').classList.remove('hidden');
+    document.getElementById('landing').classList.add('hidden');
+    document.getElementById('genes').innerHTML=
+      `<p class="msg">${T('errRows')}</p>`;
+    document.getElementById('plate').innerHTML='';
+    document.getElementById('mapbox').open=true;
+    return;
+  }
+  EXCLUDED=new Set(RAW.filter(r=>r.undet).map(r=>r.key));
+  const targets=[...new Set(RAW.map(r=>r.target))];
+  const samples=[...new Set(RAW.map(r=>r.sample))];
+  ORDER=[...samples];
+
+  const refSel=document.getElementById('ref'), calSel=document.getElementById('cal');
+  refSel.innerHTML=targets.map(t=>`<option>${esc(t)}</option>`).join('');
+  const g=targets.find(t=>/^(gapdh|actb|b-?actin|β-?actin|18s|hprt1?|tbp|rplp0)$/i.test(t.trim()));
+  refSel.value=g||targets[0];
+  calSel.innerHTML=samples.map(s=>`<option>${esc(s)}</option>`).join('');
+  const c=samples.find(s=>/^(con|ctl|ctrl|control|nc|veh|vehicle|untreated|mock|wt)/i.test(s.trim()));
+  calSel.value=c||samples[0];
+  refSel.onchange=calSel.onchange=document.getElementById('pairmode').onchange=document.getElementById('errmode').onchange=render;
+
+  document.getElementById('fname').textContent=FNAME||'—';
+  document.getElementById('landing').classList.add('hidden');
+  document.getElementById('app').classList.remove('hidden');
+  render();
+}
+
+/* ============ 계산 ============ */
+const activeCts=(s,t)=>RAW.filter(r=>r.sample===s&&r.target===t&&!EXCLUDED.has(r.key)&&!r.undet);
+const errMode=()=>{const e=document.getElementById('errmode'); return e?e.value:'sd';};
+const errName=()=>T(errMode()==='sem'?'semShort':'sdShort');
+function flags(){
+  const late=new Set(), high=new Set(), seen=new Set();
+  RAW.forEach(r=>{ if(r.undet||(isFinite(r.ct)&&r.ct>CT_LATE)) late.add(r.key); });
+  RAW.forEach(r=>{
+    const k=r.sample+'|||'+r.target; if(seen.has(k))return; seen.add(k);
+    const g=activeCts(r.sample,r.target);
+    if(g.length>=2 && sd(g.map(x=>x.ct))>SD_HIGH) g.forEach(x=>high.add(x.key));
+  });
+  return {late,high};
+}
+/** 그룹×타겟 -> replicate별 ∆Cp. mode: sorted | well | nopair */
+function makeReps(g,tgt,ref,mode){
+  let tv=activeCts(g,tgt), gv=activeCts(g,ref);
+  if(mode==='nopair'){
+    if(!tv.length||!gv.length) return [];
+    const rm=mean(gv.map(x=>x.ct));           // reference 평균 하나로 모든 rep을 나눔
+    return tv.map(x=>({tct:x.ct, rct:rm, dcp:x.ct-rm, refIsMean:true}));
+  }
+  if(mode==='sorted'){ tv=[...tv].sort((a,b)=>a.ct-b.ct); gv=[...gv].sort((a,b)=>a.ct-b.ct); }
+  const n=Math.min(tv.length,gv.length), reps=[];
+  for(let i=0;i<n;i++) reps.push({tct:tv[i].ct, rct:gv[i].ct, dcp:tv[i].ct-gv[i].ct});
+  return reps;
+}
+function compute(mode){
+  const ref=document.getElementById('ref').value;
+  const cal=document.getElementById('cal').value;
+  mode=mode||document.getElementById('pairmode').value;
+  const targets=[...new Set(RAW.map(r=>r.target))].filter(t=>t!==ref);
+  const groups=ORDER.filter(g=>RAW.some(r=>r.sample===g));
+  const out=[];
+  for(const tgt of targets){
+    const blocks=[];
+    for(const g of groups){
+      const reps=makeReps(g,tgt,ref,mode);
+      blocks.push({group:g,n:reps.length,reps});
+    }
+    const calB=blocks.find(b=>b.group===cal);
+    if(!calB||!calB.n){ out.push({target:tgt,blocks,ok:false}); continue; }
+    const calDcp=mean(calB.reps.map(r=>r.dcp));
+    blocks.forEach(b=>b.reps.forEach(r=>{ r.ddcp=r.dcp-calDcp; r.pow=2**(-r.ddcp); }));
+    const calPow=mean(calB.reps.map(r=>r.pow));
+    blocks.forEach(b=>{
+      b.reps.forEach(r=>{ r.norm=r.pow/calPow; });
+      const N=b.reps.map(r=>r.norm), D=b.reps.map(r=>r.dcp);
+      b.mean=b.n?mean(N):NaN; b.sd=sd(N);
+      b.sem=(b.n>1&&isFinite(b.sd))?b.sd/Math.sqrt(b.n):NaN;
+      b.err=(errMode()==='sem')?b.sem:b.sd;
+      b.dcpMean=b.n?mean(D):NaN; b.dcpSd=sd(D); b.dcp=D;
+    });
+    // 통계: ∆Cp 기준
+    const calD=calB.dcp;
+    const raw=blocks.map(b=> b.group===cal ? NaN
+      : (b.n>=2 && calD.length>=2 ? welch(b.dcp,calD).p : NaN));
+    const adj=holm(raw);
+    blocks.forEach((b,i)=>{ b.p=raw[i]; b.padj=adj[i]; });
+    const av=anova(blocks.filter(b=>b.n>=2).map(b=>b.dcp));
+    out.push({target:tgt,blocks,ok:true,anova:av,calDcp,calPow});
+  }
+  return {res:out, ref, cal, groups, mode};
+}
+
+/* ============ 렌더 ============ */
+function render(){ renderChips(); renderPlate(); renderRef(); renderGenes(); renderGroupTable(); renderAlerts(); renderCompare(); renderLegend(); }
+
+/** 군을 행으로, 유전자를 열로 — 랩미팅 슬라이드용 */
+function groupMatrix(){
+  const {res,ref,cal}=compute();
+  const genes=res.filter(g=>g.ok);
+  const groups=ORDER.filter(g=>RAW.some(r=>r.sample===g));
+  const cells=groups.map(gr=>({
+    group:gr,
+    isCal:gr===cal,
+    vals:genes.map(g=>{
+      const b=g.blocks.find(x=>x.group===gr);
+      return (b&&b.n)?{mean:b.mean, err:b.err, n:b.n, padj:b.padj, isCal:gr===cal}:null;
+    })
+  })).filter(row=>row.vals.some(v=>v));
+  return {genes, cells, ref, cal};
+}
+function renderGroupTable(){
+  const M=groupMatrix();
+  const t=document.getElementById('grptbl');
+  if(!M.genes.length){ t.innerHTML=''; return; }
+  t.innerHTML=`<thead><tr><th>${T('refC1')}</th>${
+    M.genes.map(g=>`<th>${esc(g.target)}</th>`).join('')}</tr></thead><tbody>`+
+    M.cells.map(row=>`<tr class="${row.isCal?'calrow':''}">
+      <td>${esc(row.group)}</td>${
+      row.vals.map(v=>{
+        if(!v) return '<td>—</td>';
+        const st = v.isCal ? '' : (isFinite(v.padj)&&v.padj<0.05 ? `<span class="st">${stars(v.padj)}</span>` : '');
+        const pm = (v.n>1&&isFinite(v.err)) ? `<span class="pm"> ± ${F(v.err,3)}</span>` : '';
+        return `<td>${F(v.mean,3)}${pm}${st}</td>`;
+      }).join('')}</tr>`).join('')+'</tbody>';
+
+  const btn=document.getElementById('grp-copy');
+  btn.onclick=async()=>{
+    const lines=[[T('refC1'),...M.genes.map(g=>g.target)].join('\t')];
+    M.cells.forEach(row=>lines.push([row.group,...row.vals.map(v=>{
+      if(!v) return '';
+      const st=v.isCal?'':(isFinite(v.padj)&&v.padj<0.05?' '+stars(v.padj):'');
+      return (v.n>1&&isFinite(v.err)) ? `${F(v.mean,3)} ± ${F(v.err,3)}${st}` : F(v.mean,3);
+    })].join('\t')));
+    const txt=lines.join('\n');
+    try{ await navigator.clipboard.writeText(txt); }
+    catch(e){
+      const ta=document.createElement('textarea'); ta.value=txt;
+      ta.style.position='fixed'; ta.style.opacity='0';
+      document.body.appendChild(ta); ta.select();
+      try{ document.execCommand('copy'); }catch(_){}
+      ta.remove();
+    }
+    btn.textContent=T('grpCopied');
+    setTimeout(()=>{ btn.textContent=T('grpCopy'); },1600);
+  };
+}
+
+/** reference 유전자가 군에 따라 흔들리는지 */
+function refStats(){
+  const ref=document.getElementById('ref').value;
+  const groups=ORDER.filter(g=>RAW.some(r=>r.sample===g));
+  const rows=[];
+  groups.forEach(g=>{
+    const cts=activeCts(g,ref).map(x=>x.ct);
+    if(!cts.length) return;
+    rows.push({group:g, n:cts.length, mean:mean(cts), sd:sd(cts)});
+  });
+  if(rows.length<2) return {ref, rows, spread:NaN, overall:NaN, level:'ok'};
+  const ms=rows.map(r=>r.mean);
+  const overall=mean(ms);
+  const spread=Math.max(...ms)-Math.min(...ms);
+  rows.forEach(r=>r.dev=r.mean-overall);
+  const level = spread>1 ? 'bad' : spread>0.5 ? 'warn' : 'ok';
+  return {ref, rows, spread, overall, level};
+}
+function renderRef(){
+  const R=refStats();
+  const tbl=document.getElementById('reftbl'), vb=document.getElementById('refverdict');
+  if(!R.rows.length){ tbl.innerHTML=''; vb.innerHTML=''; return; }
+  const maxAbs=Math.max(0.001,...R.rows.map(r=>Math.abs(r.dev||0)));
+  tbl.innerHTML=`<thead><tr><th>${T('refC1')}</th><th>${T('refC2')}</th><th>${T('refC3')}</th>
+    <th>${T('refC4')}</th><th>${T('refC5')}</th></tr></thead><tbody>`+
+    R.rows.map(r=>{
+      const d=r.dev||0, w=Math.abs(d)/maxAbs*50;
+      const col = Math.abs(d)>0.5 ? 'var(--st-bad)' : Math.abs(d)>0.25 ? 'var(--st-warn)' : 'var(--ink-2)';
+      const bar = d>=0
+        ? `<i style="left:50%;width:${w}%;background:${col}"></i>`
+        : `<i style="left:${50-w}%;width:${w}%;background:${col}"></i>`;
+      return `<tr><td>${esc(r.group)}</td><td>${F(r.mean,3)}</td>
+        <td class="sd">${r.n>1?F(r.sd,3):'—'}</td>
+        <td><span class="dev">${d>0?'+':''}${F(d,3)}<span class="devbar">${bar}</span></span></td>
+        <td class="n">${r.n}</td></tr>`;
+    }).join('')+'</tbody>';
+  const sp=F(R.spread,3), fold=F(Math.pow(2,R.spread),1);
+  const msg = R.level==='bad' ? T('refBad',sp,fold) : R.level==='warn' ? T('refWarn',sp) : T('refOk',sp);
+  const lv = R.level==='bad' ? T('lvBad') : R.level==='warn' ? T('lvWarn') : T('lvOk');
+  vb.innerHTML=`<div class="verdict">
+    <span class="stlabel ${R.level}">${lv}</span>
+    <p>${msg}</p>
+    ${R.level==='ok'?'':`<p class="why">${T('refWhy')}</p>`}</div>`;
+}
+
+/** 그림 설명 / Methods 문장 생성 */
+function renderLegend(){
+  const {res,ref,cal}=compute();
+  const box=document.getElementById('legbox');
+  if(!res.some(g=>g.ok)){ box.textContent='—'; return; }
+  const ns=[...new Set(res.filter(g=>g.ok).flatMap(g=>g.blocks.filter(b=>b.n).map(b=>b.n)))].sort();
+  const nTxt = ns.length===1 ? String(ns[0]) : `${ns[0]}–${ns[ns.length-1]}`;
+  const off=[...EXCLUDED].map(k=>RAW.find(r=>r.key===k)).filter(Boolean);
+  const names=off.map(r=>r.well||`${r.sample}·${r.target}`);
+  const list = names.length>10 ? names.slice(0,10).join(', ')+' …' : names.join(', ');
+  const excl = off.length ? T('legExcl', off.length, list) : '';
+  box.textContent = T('legText', {
+    ref, cal, n:nTxt, err:errName(),
+    modeNote: T('legMode')[document.getElementById('pairmode').value],
+    excl
+  });
+  const btn=document.getElementById('leg-copy');
+  btn.onclick=async()=>{
+    const txt=box.textContent;
+    try{ await navigator.clipboard.writeText(txt); }
+    catch(e){
+      const ta=document.createElement('textarea');
+      ta.value=txt; ta.style.position='fixed'; ta.style.opacity='0';
+      document.body.appendChild(ta); ta.select();
+      try{ document.execCommand('copy'); }catch(_){}
+      ta.remove();
+    }
+    btn.textContent=T('legCopied');
+    setTimeout(()=>{ btn.textContent=T('legCopy'); },1600);
+  };
+}
+
+const MODES=()=>[['sorted',T('cmpM1')],['well',T('cmpM2')],['nopair',T('cmpM3')]];
+function renderCompare(){
+  const cur=document.getElementById('pairmode').value;
+  const cal=document.getElementById('cal').value;
+  const MS=MODES();
+  const runs={}; MS.forEach(([m])=>runs[m]=compute(m).res);
+  const genes=runs[cur].filter(g=>g.ok).map(g=>g.target);
+  let h=`<thead><tr><th>${T('cmpC1')}</th><th>${T('cmpC2')}</th><th>${T('cmpC3')}</th><th>${T('cmpC4')}</th>
+    <th>${T('cmpC5')}</th><th>${T('cmpC6')}</th></tr></thead><tbody>`;
+  genes.forEach((tgt,gi)=>{
+    MS.forEach(([m,lbl],mi)=>{
+      const g=runs[m].find(x=>x.target===tgt);
+      if(!g||!g.ok) return;
+      const bl=g.blocks.filter(b=>b.n);
+      const means=bl.map(b=>b.mean), sds=bl.filter(b=>isFinite(b.sd)).map(b=>b.sd);
+      const avgSd=sds.length?mean(sds):NaN;
+      const nsig=bl.filter(b=>b.group!==cal&&isFinite(b.padj)&&b.padj<0.05).length;
+      const isCur=m===cur;
+      // 가장 작은 평균 SD면 빨간색 (= 과소평가 신호)
+      const allSd=MS.map(([mm])=>{
+        const gg=runs[mm].find(x=>x.target===tgt);
+        if(!gg||!gg.ok) return NaN;
+        const ss=gg.blocks.filter(b=>b.n&&isFinite(b.sd)).map(b=>b.sd);
+        return ss.length?mean(ss):NaN;
+      }).filter(isFinite);
+      const isMin=allSd.length>1 && Math.abs(avgSd-Math.min(...allSd))<1e-9;
+      h+=`<tr class="${mi===0&&gi?'gsep':''}">
+        <td>${mi===0?esc(tgt):''}</td>
+        <td class="mode ${isCur?'cur':''}">${lbl}${isCur?T('cmpSel'):''}</td>
+        <td>${F(Math.min(...means),3)} – ${F(Math.max(...means),3)}</td>
+        <td class="${isMin?'low':''}">${F(avgSd,4)}</td>
+        <td>${pTxt(g.anova.p)}</td>
+        <td>${nsig} / ${bl.length-1}</td></tr>`;
+    });
+  });
+  document.getElementById('cmptbl').innerHTML=h+'</tbody>';
+}
+
+/** 결과 위쪽에 뜨는 QC 요약 경고 */
+function renderAlerts(){
+  const box=document.getElementById('alerts');
+  const {late,high}=flags();
+  const L=[...late].filter(k=>!EXCLUDED.has(k)).map(k=>RAW.find(r=>r.key===k));
+  const H=[...high].filter(k=>!EXCLUDED.has(k)&&!late.has(k)).map(k=>RAW.find(r=>r.key===k));
+  let h='';
+  const R=refStats();
+  if(R.level==='bad'){
+    h+=`<div class="alert"><div class="txt">
+      <span class="stlabel bad">${T('stDanger')}</span>
+      <p class="at">${T('alRefT', esc(R.ref), F(R.spread,2))}</p><p>${T('alRefB')}</p></div></div>`;
+  }
+  if(L.length){
+    const combos=[...new Set(L.map(r=>r.sample+' · '+r.target))];
+    h+=`<div class="alert"><div class="txt">
+      <span class="stlabel bad">${T('stDanger')}</span>
+      <p class="at">${T('alLateT',L.length)}</p><p>${T('alLateB')}</p>
+      <p class="combos">${combos.slice(0,6).map(esc).join(' / ')}${combos.length>6?' …':''}</p></div>
+      <button id="a-late">${T('alLateBtn')}</button></div>`;
+  }
+  if(H.length){
+    const combos=[...new Set(H.map(r=>r.sample+' · '+r.target))];
+    h+=`<div class="alert"><div class="txt">
+      <span class="stlabel warn">${T('stCaution')}</span>
+      <p class="at">${T('alHighT',combos.length)}</p><p>${T('alHighB')}</p>
+      <p class="combos">${combos.slice(0,6).map(esc).join(' / ')}${combos.length>6?' …':''}</p></div></div>`;
+  }
+  if(!L.length && !H.length && EXCLUDED.size){
+    h+=`<div class="alert"><div class="txt">
+      <span class="stlabel">${T('stCalm')}</span>
+      <p class="at">${T('alOffT',EXCLUDED.size)}</p><p>${T('alOffB')}</p></div></div>`;
+  }
+  box.innerHTML=h;
+  const b=document.getElementById('a-late');
+  if(b) b.onclick=()=>{ flags().late.forEach(k=>EXCLUDED.add(k)); render(); };
+}
+
+function renderChips(){
+  const cal=document.getElementById('cal').value;
+  const box=document.getElementById('chips');
+  box.innerHTML=ORDER.map((g,i)=>
+    `<div class="chip ${g===cal?'cal':''}" draggable="true" data-g="${esc(g)}">
+      <span class="idx">${i+1}</span>${esc(g)}${g===cal?' <span class="idx">cal</span>':''}</div>`).join('');
+  let src=null;
+  box.querySelectorAll('.chip').forEach(c=>{
+    c.ondragstart=e=>{src=c;c.classList.add('drag');e.dataTransfer.effectAllowed='move';};
+    c.ondragend=()=>{c.classList.remove('drag');src=null;};
+    c.ondragover=e=>{e.preventDefault(); if(!src||src===c)return;
+      const r=c.getBoundingClientRect();
+      box.insertBefore(src,(e.clientX-r.left)/r.width<0.5?c:c.nextSibling);};
+    c.ondrop=e=>{e.preventDefault();
+      ORDER=[...box.querySelectorAll('.chip')].map(x=>x.dataset.g); render();};
+  });
+}
+
+function renderPlate(){
+  const {late,high}=flags();
+  const cells=new Map(); let maxC=0; const rowsSet=new Set();
+  RAW.forEach((r,i)=>{
+    let rw,cl;
+    const m=/^([A-Pa-p])\s*0?(\d{1,2})$/.exec(r.well||'');
+    if(m){ rw=m[1].toUpperCase(); cl=+m[2]; }
+    else { rw='ABCDEFGH'[Math.floor(i/12)%8]; cl=(i%12)+1; }
+    rowsSet.add(rw); maxC=Math.max(maxC,cl); cells.set(rw+'|'+cl,r);
+  });
+  const rws=[...rowsSet].sort();
+  let h='<thead><tr><th></th>';
+  for(let c=1;c<=maxC;c++) h+=`<th>${c}</th>`;
+  h+='</tr></thead><tbody>';
+  for(const rw of rws){
+    h+=`<tr><th>${rw}</th>`;
+    for(let c=1;c<=maxC;c++){
+      const r=cells.get(rw+'|'+c);
+      if(!r){ h+='<td class="well empty"></td>'; continue; }
+      const off=EXCLUDED.has(r.key);
+      const cls=off?'off':late.has(r.key)?'bad':high.has(r.key)?'warn':'ok';
+      const ctTxt=r.undet?'N/D':r.ct.toFixed(2);
+      h+=`<td class="well ${cls}" data-k="${r.key}" tabindex="0" role="checkbox" aria-checked="${!off}"
+            title="${esc(r.sample+' · '+r.target+' · '+ctTxt+(off?' '+T('excluded'):''))}">
+            <div class="ct">${ctTxt}</div><div class="tg">${esc(r.target)}</div></td>`;
+    }
+    h+='</tr>';
+  }
+  document.getElementById('plate').innerHTML=h+'</tbody>';
+  document.querySelectorAll('.well[data-k]').forEach(el=>{
+    const t=()=>{const k=el.dataset.k; EXCLUDED.has(k)?EXCLUDED.delete(k):EXCLUDED.add(k); render();};
+    el.onclick=t;
+    el.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();t();}};
+  });
+  const nL=[...late].filter(k=>!EXCLUDED.has(k)).length;
+  const nH=[...high].filter(k=>!EXCLUDED.has(k)).length;
+  const note=document.getElementById('flagnote');
+  if(!nL&&!nH){
+    note.className='';
+    note.textContent=EXCLUDED.size?T('qcOffOnly',EXCLUDED.size):T('qcNone');
+  }else{
+    note.className='has';
+    const p=[]; if(nL)p.push(T('qcLate',nL)); if(nH)p.push(T('qcHigh',nH));
+    note.textContent=p.join(' · ')+T('qcTail');
+  }
+  document.getElementById('excl-all').onclick=()=>{
+    const f=flags(); f.late.forEach(k=>EXCLUDED.add(k)); f.high.forEach(k=>EXCLUDED.add(k)); render();};
+  document.getElementById('incl-all').onclick=()=>{
+    EXCLUDED=new Set(RAW.filter(r=>r.undet).map(r=>r.key)); render();};
+}
+
+function renderGenes(){
+  const {res,ref,cal}=compute();
+  const box=document.getElementById('genes');
+  if(!res.length){
+    box.innerHTML=`<p class="msg">${T('noTgt')}</p>`; return;
+  }
+  box.innerHTML=res.map((g,i)=>{
+    if(!g.ok) return `<article class="gene"><div class="gene-head"><h3>${esc(g.target)}</h3></div>
+      <p class="msg">${T('noCal',esc(cal))}</p></article>`;
+    const rows=g.blocks.map(b=>{
+      const isCal=b.group===cal;
+      const sg = isCal ? `<span class="ns">${T('refBase')}</span>`
+        : b.n>=2 ? `<span class="${isFinite(b.padj)&&b.padj<0.05?'star':'ns'}">${stars(b.padj)}</span>` : '<span class="ns">—</span>';
+      return `<tr class="${isCal?'calrow':''}">
+        <td>${esc(b.group)}</td>
+        <td>${F(b.dcpMean,2)}</td>
+        <td>${b.n?F(b.mean,4):'—'}</td>
+        <td class="sd">${b.n>1?'± '+F(b.err,4):'—'}</td>
+        <td>${isCal?'<span class="ns">—</span>':pTxt(b.padj)}</td>
+        <td>${sg}</td>
+        <td class="n">${b.n}</td></tr>`;
+    }).join('');
+    const a=g.anova;
+    const anovaTxt = isFinite(a.p)
+      ? T('anovaOk', a.F.toFixed(3), a.df1, a.df2, pTxt(a.p), a.p<0.05)
+      : T('anovaNo');
+    return `<article class="gene">
+      <div class="gene-head">
+        <h3>${esc(g.target)}</h3>
+        <span class="meta">/ ${esc(ref)} · cal = ${esc(cal)}</span>
+        <button data-png="${i}">PNG</button>
+      </div>
+      <div class="gene-body">
+        <div>
+          <div class="chartbox">${chart(g,cal)}</div>
+          <p class="anova">${anovaTxt}</p>
+        </div>
+        <div class="scroll-x"><table class="data">
+          <thead><tr><th>${T('thGroup')}</th><th>∆Cp</th><th>${T('thNorm')}</th><th>${errName()}</th><th>${T('thP')}</th><th></th><th>${T('thN')}</th></tr></thead>
+          <tbody>${rows}</tbody>
+        </table></div>
+      </div>
+      <details class="trace">
+        <summary>${T('traceSum')}</summary>
+        ${trace(g,cal,ref)}
+      </details>
+    </article>`;
+  }).join('');
+  box.querySelectorAll('button[data-png]').forEach(b=>{
+    b.onclick=()=>savePng(+b.dataset.png, res[+b.dataset.png].target);
+  });
+  document.getElementById('dl-xlsx').onclick=()=>xlsx(res,ref,cal);
+  document.getElementById('dl-csv').onclick=()=>csv(res,ref,cal);
+  document.getElementById('dl-pptx').onclick=()=>pptx();
+}
+
+function trace(g,cal,ref){
+  let h=`<div class="scroll-x"><table class="tracetbl"><thead><tr>
+    <th>${T('thGroup')}</th><th>${T('trRep')}</th><th>${T('trCt',esc(g.target))}</th><th>${g.blocks.find(b=>b.n&&b.reps[0].refIsMean)?T('trMeanCt',esc(ref)):T('trCt',esc(ref))}</th>
+    <th>∆Cp</th><th>∆∆Cp</th><th>2^(−∆∆Cp)</th><th>Normalized</th></tr></thead><tbody>`;
+  g.blocks.forEach((b,bi)=>{
+    if(!b.n){ h+=`<tr class="${bi?'gsep':''}"><td class="gname">${esc(b.group)}</td>
+      <td colspan="7" class="calc">${T('trNoRep')}</td></tr>`; return; }
+    b.reps.forEach((r,i)=>{
+      h+=`<tr class="${i===0&&bi?'gsep':''}">
+        <td class="gname">${i===0?esc(b.group)+(b.group===cal?' <span class="calc">(cal)</span>':''):''}</td>
+        <td class="calc">${i+1}</td>
+        <td>${r.tct.toFixed(4)}</td><td>${r.rct.toFixed(4)}</td>
+        <td>${r.dcp.toFixed(4)}</td><td>${r.ddcp.toFixed(4)}</td>
+        <td>${r.pow.toFixed(4)}</td><td>${r.norm.toFixed(4)}</td></tr>`;
+    });
+  });
+  const md=document.getElementById('pairmode').value;
+  const step1 = md==='nopair' ? T('tr1Nopair',esc(g.target),esc(ref))
+    : md==='sorted' ? T('tr1Sorted',esc(g.target),esc(ref))
+    : T('tr1Well',esc(g.target),esc(ref));
+  h+=`</tbody></table></div>
+  <div class="trace-steps">
+    ${step1}<br>
+    ${T('tr2', g.calDcp.toFixed(4), esc(cal))}<br>
+    ${T('tr3', g.calPow.toFixed(4), esc(cal))}</div>`;
+  return h;
+}
+
+/* ============ 차트 ============ */
+function niceTicks(max){
+  if(!isFinite(max)||max<=0) return {top:1,step:.25};
+  const raw=max/4, p=10**Math.floor(Math.log10(raw)), n=raw/p;
+  const step=(n<=1?1:n<=2?2:n<=5?5:10)*p;
+  return {top:Math.ceil(max/step)*step, step};
+}
+function chart(g,cal){
+  const W=560,H=350,L=68,R=18,MT=30,B=76, pw=W-L-R, ph=H-MT-B;
+  const bs=g.blocks.filter(b=>b.n>0);
+  if(!bs.length) return `<svg viewBox="0 0 ${W} ${H}"></svg>`;
+  const hi=Math.max(...bs.map(b=>Math.max(b.mean+(b.err||0),...b.reps.map(r=>r.norm))));
+  const {top,step}=niceTicks(hi*1.14);
+  const y=v=>MT+ph-(v/top)*ph;
+  const gap=pw/bs.length, bw=Math.min(62,gap*0.56);
+  let s=`<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" font-family="Pretendard Variable, Pretendard, sans-serif">`;
+  for(let v=0;v<=top+1e-9;v+=step){
+    const yy=y(v);
+    s+=`<line x1="${L}" y1="${yy}" x2="${L+pw}" y2="${yy}" stroke="${v===0?'#2A2824':'#E6E2DA'}" stroke-width="1"/>
+    <text x="${L-10}" y="${yy+4}" text-anchor="end" font-size="13" fill="#4A4743">${+v.toFixed(4)}</text>`;
+  }
+  s+=`<line x1="${L}" y1="${MT}" x2="${L}" y2="${MT+ph}" stroke="#2A2824" stroke-width="1"/>
+  <text transform="translate(18,${MT+ph/2}) rotate(-90)" text-anchor="middle" font-size="14" font-weight="500" fill="#2A2824">${T('chartY')}</text>`;
+  if(1<=top) s+=`<line x1="${L}" y1="${y(1)}" x2="${L+pw}" y2="${y(1)}" stroke="#2A2824" stroke-width="1" stroke-dasharray="4 3" opacity=".35"/>`;
+  bs.forEach((b,i)=>{
+    const cx=L+gap*i+gap/2, x0=cx-bw/2, isCal=b.group===cal;
+    s+=`<rect x="${x0}" y="${y(b.mean)}" width="${bw}" height="${Math.max(0,MT+ph-y(b.mean))}"
+      fill="${isCal?'#F7F5F0':'#8A857C'}" stroke="#5C5850" stroke-width="1"/>`;
+    let topY=y(b.mean);
+    if(isFinite(b.err)&&b.err>0){
+      const t=y(b.mean+b.err), bo=y(Math.max(0,b.mean-b.err)), cw=bw*0.3;
+      topY=t;
+      s+=`<line x1="${cx}" y1="${t}" x2="${cx}" y2="${bo}" stroke="#2A2824" stroke-width="1"/>
+      <line x1="${cx-cw}" y1="${t}" x2="${cx+cw}" y2="${t}" stroke="#2A2824" stroke-width="1"/>
+      <line x1="${cx-cw}" y1="${bo}" x2="${cx+cw}" y2="${bo}" stroke="#2A2824" stroke-width="1"/>`;
+    }
+    b.reps.forEach((r,j)=>{
+      const jx=cx+(j-(b.reps.length-1)/2)*7;
+      s+=`<circle cx="${jx}" cy="${y(r.norm)}" r="2.8" fill="#F7F5F0" stroke="#2A2824" stroke-width="1"/>`;
+      topY=Math.min(topY,y(r.norm));
+    });
+    if(!isCal && isFinite(b.padj)){
+      const st=stars(b.padj);
+      const isSig=b.padj<0.05;
+      s+=`<text x="${cx}" y="${topY-8}" text-anchor="middle" font-size="${isSig?14:13}"
+        font-weight="${isSig?'500':'400'}" fill="${isSig?'#2A2824':'#4A4743'}">${st}</text>`;
+    }
+    const lbl=b.group.length>13?b.group.slice(0,12)+'…':b.group;
+    s+=`<text x="${cx}" y="${MT+ph+18}" text-anchor="end" font-size="13" fill="#2A2824"
+      transform="rotate(-32 ${cx} ${MT+ph+18})">${esc(lbl)}</text>`;
+  });
+  s+=`<text x="${L+pw/2}" y="${H-6}" text-anchor="middle" font-size="14" font-weight="500" fill="#2A2824">${T('chartX')}</text></svg>`;
+  return s;
+}
+function savePng(i,name){
+  const svg=document.querySelectorAll('.chartbox svg')[i];
+  const xml=new XMLSerializer().serializeToString(svg);
+  const img=new Image(), S=3;
+  img.onload=()=>{
+    const c=document.createElement('canvas'); c.width=560*S; c.height=350*S;
+    const x=c.getContext('2d'); x.fillStyle='#fff'; x.fillRect(0,0,c.width,c.height);
+    x.drawImage(img,0,0,c.width,c.height);
+    c.toBlob(b=>dl(b,String(name).replace(/[^\w가-힣.-]/g,'_')+'_chart.png'));
+  };
+  img.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(xml);
+}
+function dl(blob,name){
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob); a.download=name; a.click();
+  setTimeout(()=>URL.revokeObjectURL(a.href),1500);
+}
+
+
+/* ============ PPT 내보내기 ============
+   PptxGenJS는 네이티브 차트는 만들지만 오차막대를 지원하지 않는다.
+   그래서 생성된 pptx를 JSZip으로 열어 차트 XML에 <c:errBars>를 직접 주입한다.
+   결과물은 PPT에서 완전히 편집 가능한 차트로 열린다. */
+function errBarsXml(vals){
+  const pts=vals.map((v,i)=>`<c:pt idx="${i}"><c:v>${isFinite(v)?v:0}</c:v></c:pt>`).join('');
+  const lit=`<c:numLit><c:formatCode>General</c:formatCode><c:ptCount val="${vals.length}"/>${pts}</c:numLit>`;
+  return '<c:errBars><c:errDir val="y"/><c:errBarType val="both"/><c:errValType val="cust"/>'
+       + '<c:noEndCap val="0"/><c:plus>'+lit+'</c:plus><c:minus>'+lit+'</c:minus></c:errBars>';
+}
+
+async function pptx(){
+  const btn=document.getElementById('dl-pptx');
+  const label=btn.textContent;
+  btn.disabled=true; btn.textContent='…';
+  try{
+    const {res,ref,cal}=compute();
+    const genes=res.filter(g=>g.ok);
+    if(!genes.length) return;
+    const M=groupMatrix();
+    const ns=[...new Set(genes.flatMap(g=>g.blocks.filter(b=>b.n).map(b=>b.n)))].sort();
+    const nTxt=ns.length===1?String(ns[0]):`${ns[0]}–${ns[ns.length-1]}`;
+    const sub=T('pptSub',{ref,cal,err:errName(),n:nTxt});
+
+    const p=new PptxGenJS();
+    p.layout='LAYOUT_16x9';
+    const INK='2A2824', SUBTLE='4A4743', BAR='8A857C', WASH='EFECE5';
+
+    // --- 1) 군별 요약 표 ---
+    const s0=p.addSlide();
+    s0.addText(T('pptSum'), {x:0.5,y:0.35,w:9,h:0.5,fontSize:24,color:INK});
+    s0.addText(sub, {x:0.5,y:0.85,w:9,h:0.3,fontSize:11,color:SUBTLE});
+    const head=[{text:'Group',options:{color:SUBTLE,fill:{color:'FFFFFF'}}}]
+      .concat(M.genes.map(g=>({text:g.target,options:{color:SUBTLE,fill:{color:'FFFFFF'},align:'right'}})));
+    const body=M.cells.map(row=>{
+      const c0={text:row.group,options:{color:INK,fill:{color:row.isCal?WASH:'FFFFFF'}}};
+      const rest=row.vals.map(v=>{
+        if(!v) return {text:'—',options:{align:'right',fill:{color:row.isCal?WASH:'FFFFFF'}}};
+        const st=v.isCal?'':(isFinite(v.padj)&&v.padj<0.05?' '+stars(v.padj):'');
+        const txt=(v.n>1&&isFinite(v.err))?`${F(v.mean,3)} ± ${F(v.err,3)}${st}`:F(v.mean,3);
+        return {text:txt,options:{align:'right',fill:{color:row.isCal?WASH:'FFFFFF'}}};
+      });
+      return [c0].concat(rest);
+    });
+    s0.addTable([head].concat(body), {
+      x:0.5, y:1.35, w:9, fontSize:12, color:INK, border:{type:'solid',color:'DCD7CD',pt:0.5},
+      autoPage:false, valign:'middle', rowH:0.36
+    });
+    s0.addText(T('grpNote'), {x:0.5,y:5.05,w:9,h:0.3,fontSize:9,color:SUBTLE});
+
+    // --- 2) 유전자별 슬라이드 (네이티브 편집 가능 차트) ---
+    const errByGene={};
+    genes.forEach(g=>{
+      const bl=g.blocks.filter(b=>b.n);
+      const s=p.addSlide();
+      s.addText(g.target, {x:0.5,y:0.32,w:9,h:0.5,fontSize:24,color:INK});
+      s.addText(sub, {x:0.5,y:0.82,w:9,h:0.3,fontSize:11,color:SUBTLE});
+      s.addChart(p.ChartType.bar, [{
+        name:g.target,
+        labels:bl.map(b=>b.group),
+        values:bl.map(b=>+b.mean.toFixed(6))
+      }], {
+        x:0.6, y:1.25, w:8.8, h:3.9,
+        barDir:'col', barGapWidthPct:120,
+        chartColors:[BAR],
+        valAxisTitle:T('pptAxis'), showValAxisTitle:true,
+        valAxisMinVal:0, valGridLine:{style:'solid',color:'E6E2DA',size:1},
+        catGridLine:{style:'none'},
+        valAxisLabelFontSize:11, catAxisLabelFontSize:11,
+        valAxisTitleFontSize:12,
+        showLegend:false, showTitle:false,
+        border:{pt:0,color:'FFFFFF'}
+      });
+      errByGene[g.target]=bl.map(b=>isFinite(b.err)?+b.err.toFixed(6):0);
+    });
+
+    // --- 3) 오차막대 주입 ---
+    const buf=await p.write({outputType:'arraybuffer'});
+    const zip=await JSZip.loadAsync(buf);
+    const charts=Object.keys(zip.files).filter(f=>/^ppt\/charts\/chart\d+\.xml$/.test(f));
+    for(const path of charts){
+      let xml=await zip.file(path).async('string');
+      // 시리즈 이름(=유전자명)으로 어느 차트인지 식별
+      const m=/<c:tx>[\s\S]*?<c:v>([^<]*)<\/c:v>[\s\S]*?<\/c:tx>/.exec(xml);
+      const name=m?m[1].replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&quot;/g,'"').replace(/&apos;/g,"'").replace(/&amp;/g,'&'):null;
+      const errs=name && errByGene[name];
+      if(!errs || !errs.some(v=>v>0)) continue;
+      // OOXML 스키마상 errBars 는 c:ser 내에서 <c:cat> 바로 앞에 온다
+      xml=xml.replace('<c:cat>', errBarsXml(errs)+'<c:cat>');
+      zip.file(path, xml);
+    }
+    const blob=await zip.generateAsync({type:'blob',
+      mimeType:'application/vnd.openxmlformats-officedocument.presentationml.presentation'});
+    dl(blob,'ddCt_slides.pptx');
+  } finally {
+    btn.disabled=false; btn.textContent=label;
+  }
+}
+
+/* ============ 내보내기 ============ */
+function xlsx(res,ref,cal){
+  const wb=XLSX.utils.book_new();
+  res.forEach(g=>{
+    if(!g.ok) return;
+    const A=[]; const put=(r,c,v)=>{A[r]=A[r]||[];A[r][c]=v;};
+    put(0,1,g.target+' — ΔΔCt'); put(1,1,`ref = ${ref} · calibrator = ${cal}`);
+    let r=2, calAvg=null;
+    g.blocks.forEach(b=>{
+      if(!b.n) return;
+      put(r,1,b.group);
+      [g.target,ref,'∆Cp','∆∆Cp','2^(-∆∆Cp)','Normalized'].forEach((h,j)=>put(r,2+j,h));
+      const first=r+2;
+      if(b.group===cal) calAvg=first+b.n;
+      b.reps.forEach((rep,i)=>{
+        const R=r+1+i, E=R+1;
+        put(R,1,i+1); put(R,2,rep.tct); put(R,3,rep.rct);
+        put(R,4,{f:`C${E}-D${E}`}); put(R,5,{f:`E${E}-$E$${calAvg}`});
+        put(R,6,{f:`2^(-F${E})`});  put(R,7,{f:`G${E}/$G$${calAvg}`});
+      });
+      const ra=r+1+b.n, rs=ra+1;
+      put(ra,1,'Average'); put(rs,1,'STDEV');
+      'CDEFGH'.split('').forEach((c,j)=>{
+        put(ra,2+j,{f:`AVERAGE(${c}${first}:${c}${first+b.n-1})`});
+        put(rs,2+j,{f:`STDEV(${c}${first}:${c}${first+b.n-1})`});
+      });
+      b._avg=ra+1; b._sd=rs+1; b._e1=first; b._e2=first+b.n-1;
+      r=rs+3;
+    });
+    const bl=g.blocks.filter(b=>b.n);
+    put(r,1,T('xlSummary'));
+    ['Group','Normalized Mean','STDEV','p (Welch)','p (Holm)',T('xlSig')].forEach((h,j)=>put(r+1,1+j,h));
+    bl.forEach((b,i)=>{
+      const R=r+2+i;
+      put(R,1,b.group);
+      put(R,2,{f:`H${b._avg}`}); put(R,3,{f:`H${b._sd}`});
+      if(b.group===cal){ put(R,4,'—'); put(R,5,'—'); put(R,6,T('refBase')); }
+      else { put(R,4, isFinite(b.p)?+b.p.toFixed(6):'—');
+             put(R,5, isFinite(b.padj)?+b.padj.toFixed(6):'—');
+             put(R,6, stars(b.padj)); }
+    });
+    const ar=r+3+bl.length;
+    put(ar,1,'ANOVA');
+    if(isFinite(g.anova.p)){
+      put(ar,2,`F(${g.anova.df1},${g.anova.df2})`); put(ar,3,+g.anova.F.toFixed(4));
+      put(ar,4,'p'); put(ar,5,+g.anova.p.toFixed(6));
+    }
+    put(ar+1,1,T('xlNote'));
+    const ws=XLSX.utils.aoa_to_sheet(A);
+    ws['!cols']=[{wch:3},{wch:16},{wch:14},{wch:13},{wch:11},{wch:11},{wch:13},{wch:13}];
+    XLSX.utils.book_append_sheet(wb,ws,String(g.target).replace(/[\\\/?*\[\]:]/g,'_').slice(0,31));
+  });
+  // ---- 군별 요약 시트 (행=군, 열=유전자) ----
+  const M=groupMatrix();
+  if(M.genes.length){
+    const G=[]; const pg=(r,c,v)=>{G[r]=G[r]||[];G[r][c]=v;};
+    pg(0,0,T('pptSum'));
+    pg(1,0,'Group');
+    M.genes.forEach((g,j)=>{ pg(1,1+j*3,g.target); pg(1,2+j*3,errName()); pg(1,3+j*3,'sig'); });
+    M.cells.forEach((row,i)=>{
+      pg(2+i,0,row.group);
+      row.vals.forEach((v,j)=>{
+        if(!v) return;
+        pg(2+i,1+j*3, +v.mean.toFixed(6));
+        pg(2+i,2+j*3, isFinite(v.err)?+v.err.toFixed(6):'—');
+        pg(2+i,3+j*3, v.isCal?T('refBase'):stars(v.padj));
+      });
+    });
+    const gs=XLSX.utils.aoa_to_sheet(G);
+    gs['!cols']=[{wch:16}].concat(M.genes.flatMap(()=>[{wch:11},{wch:10},{wch:6}]));
+    XLSX.utils.book_append_sheet(wb,gs,T('xlByGroup'));
+  }
+
+  // ---- QC 감사 시트: 설정 + 모든 웰의 포함/제외 이력 ----
+  const Q=[]; const put=(r,c,v)=>{Q[r]=Q[r]||[];Q[r][c]=v;};
+  const {late,high}=flags();
+  const R=refStats();
+  put(0,0,T('xlSettings'));
+  [['Reference',ref],['Calibrator',cal],
+   ['Replicate',T('legMode')[document.getElementById('pairmode').value]],
+   ['Error bars',errName()],
+   [T('xlRefStab')+' — '+T('xlSpread'), isFinite(R.spread)?+R.spread.toFixed(3):'—']
+  ].forEach((row,i)=>{ put(1+i,0,row[0]); put(1+i,1,row[1]); });
+
+  let r=8;
+  put(r,0,T('xlQC'));
+  [T('xlWell'),'Sample','Target','Ct',T('xlStatus'),T('xlFlag')].forEach((h,j)=>put(r+1,j,h));
+  RAW.forEach((w,i)=>{
+    const off=EXCLUDED.has(w.key);
+    const fl = w.undet||late.has(w.key) ? T('xlFlagLate')
+             : high.has(w.key) ? T('xlFlagHigh') : T('xlFlagNone');
+    put(r+2+i,0,w.well||'');
+    put(r+2+i,1,w.sample);
+    put(r+2+i,2,w.target);
+    put(r+2+i,3,w.undet?'N/D':+w.ct.toFixed(4));
+    put(r+2+i,4,off?T('xlExcluded'):T('xlIncluded'));
+    put(r+2+i,5,fl);
+  });
+  const qs=XLSX.utils.aoa_to_sheet(Q);
+  qs['!cols']=[{wch:9},{wch:16},{wch:14},{wch:11},{wch:10},{wch:22}];
+  XLSX.utils.book_append_sheet(wb,qs,T('xlQC'));
+
+  XLSX.writeFile(wb,'ddCt_analysis.xlsx');
+}
+/** CSV 텍스트 칸: 따옴표를 두 번 쓰고, =,+,-,@ 로 시작하면 엑셀이 수식으로 실행하지 않도록 ' 를 붙인다 */
+const csvText=v=>{ let t=String(v??''); if(/^[=+\-@\t\r]/.test(t)) t="'"+t; return '"'+t.replace(/"/g,'""')+'"'; };
+function csv(res,ref,cal){
+  const L=[['Target','Group','n','dCp_mean','dCp_SD','Normalized_mean','Normalized_SD','Normalized_SEM','p_Welch','p_Holm','sig']];
+  res.forEach(g=>{ if(!g.ok)return;
+    g.blocks.forEach(b=>{ if(!b.n)return;
+      L.push([csvText(g.target),csvText(b.group),b.n,F(b.dcpMean,4),F(b.dcpSd,4),F(b.mean,6),F(b.sd,6),F(b.sem,6),
+        b.group===cal?'':F(b.p,6), b.group===cal?'':F(b.padj,6), b.group===cal?'cal':stars(b.padj)]); }); });
+  dl(new Blob(['\ufeff'+L.map(r=>r.join(',')).join('\n')],{type:'text/csv;charset=utf-8'}),'ddCt_summary.csv');
+}
+</script>
+</body>
+</html>
